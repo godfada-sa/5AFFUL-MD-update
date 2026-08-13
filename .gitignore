@@ -1,0 +1,51 @@
+# dependencies
+node_modules/
+safful-webjs/
+
+# environment / secrets
+.env
+.env.*
+!.env.example
+temp/.env
+config.env
+
+# WhatsApp session / auth files (created at runtime)
+# (useMultiFileAuthState writes creds.json + app-state-sync-*.json into lib/Suhail_Baileys/)
+lib/Suhail_Baileys/*.json
+lib/auth-backups/
+lib/safful-auth-recovery.json
+lib/store.json
+# Live settings, contacts, and group state. Each deployed account creates its
+# own copies; never publish personal chat data to GitHub.
+lib/bot_.json
+lib/sck.json
+lib/sck1.json
+lib/safful-autoview.json
+lib/safful-mode.json
+lib/safful-protection.json
+lib/safful-status-save.json
+creds.json
+*.session
+
+# logs & runtime
+*.log
+session-qr.png
+npm-debug.log*
+yarn-error.log*
+.safful-tools/
+.freebuff/
+*-player-script.js
+
+# misc
+temp/
+Thumbs.db
+.DS_Store
+
+# Unused legacy container files. They point at the upstream Suhail project,
+# not this Safful-Md source tree or its AWS deployment flow.
+Suhail-X
+lib/Dockerfile
+heroku.yml
+
+# The old say-command asset bundle is disabled and not part of Safful-Md.
+plugins/meme.say/

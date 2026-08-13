@@ -1,0 +1,145 @@
+const fs = require('fs');
+const path = require('path');
+const { smd } = require('../lib');
+
+const SETTINGS_FILE = path.join(__dirname, '..', 'lib', 'safful-autoview.json');
+const pending = new Map();
+let sock = null;
+let timer = null;
+
+function readMinutes() {
+  try {
+    const saved = JSON.parse(fs.readFileSync(SETTINGS_FILE, 'utf8'));
+    if (Number.isInteger(saved.minutes) && saved.minutes >= 0 && saved.minutes <= 10) return saved.minutes;
+  } catch {}
+
+  const fallback = Number.parseInt(process.env.STATUS_VIEW_INTERVAL, 10);
+  return Number.isInteger(fallback) && fallback >= 0 && fallback <= 10 ? fallback : 5;
+}
+
+let minutes = readMinutes();
+
+function saveMinutes(value) {
+  fs.writeFileSync(SETTINGS_FILE, `${JSON.stringify({ minutes: value }, null, 2)}\n`, 'utf8');
+}
+
+function statusParticipant(key) {
+  return key.participant || key.participantAlt || key.remoteJidAlt || '';
+}
+
+async function sendStatusReadReceipt(key) {
+  const participant = statusParticipant(key);
+  if (!participant) throw new Error(`Status ${key.id} has no sender JID for its read receipt.`);
+
+  // readMessages follows WhatsApp's read-receipt privacy setting and may send
+  // "read-self", which marks the status locally without notifying its owner.
+  // Status auto-view needs an explicit "read" receipt instead.
+  if (typeof sock?.sendReceipt === 'function') {
+    return sock.sendReceipt('status@broadcast', participant, [key.id], 'read');
+  }
+
+  if (typeof sock?.readMessages === 'function') return sock.readMessages([key]);
+  throw new Error('The WhatsApp socket cannot send read receipts.');
+}
+
+function scheduleNextFlush() {
+  if (timer) clearTimeout(timer);
+  timer = null;
+  if (!minutes || !pending.size) return;
+
+  const nextDue = Math.min(...[...pending.values()].map((entry) => entry.retryAt || entry.dueAt));
+  const delay = Math.max(0, nextDue - Date.now());
+  timer = setTimeout(() => {
+    flush().catch((error) => console.error('[autoview] scheduled receipt failed:', error.message || error));
+  }, delay);
+}
+
+async function flush({ force = false } = {}) {
+  if (!minutes || !pending.size || !sock) return 0;
+
+  const now = Date.now();
+  const due = [...pending.values()].filter((entry) => force || (
+    entry.dueAt <= now && (!entry.retryAt || entry.retryAt <= now)
+  ));
+  let sent = 0;
+
+  for (const entry of due) {
+    try {
+      await sendStatusReadReceipt(entry.key);
+      pending.delete(entry.key.id);
+      sent += 1;
+    } catch (error) {
+      // Keep failed receipts queued so the next scheduled attempt can retry.
+      entry.retryAt = Date.now() + 30_000;
+      console.error(`[autoview] receipt failed for ${entry.key.id}:`, error.message || error);
+    }
+  }
+
+  if (sent) console.log(`[autoview] sent read receipt(s) for ${sent} status update(s)`);
+  scheduleNextFlush();
+  return sent;
+}
+
+function reschedule() {
+  scheduleNextFlush();
+}
+
+function setMinutes(value) {
+  if (!Number.isInteger(value) || value < 0 || value > 10) throw new Error('Auto-view must be an integer from 0 to 10.');
+  minutes = value;
+  saveMinutes(value);
+  if (!minutes) pending.clear();
+  else {
+    for (const entry of pending.values()) {
+      entry.dueAt = entry.queuedAt + (minutes * 60 * 1000);
+      delete entry.retryAt;
+    }
+  }
+  reschedule();
+  return minutes;
+}
+
+function attach(socket) {
+  if (!socket || socket.__saffulAutoViewAttached) return;
+  socket.__saffulAutoViewAttached = true;
+  sock = socket;
+  console.log('[autoview] raw status monitoring attached');
+
+  const handleMessagesUpsert = async ({ messages }) => {
+    for (const raw of messages || []) {
+      const key = raw?.key;
+      if (!key?.id || key.remoteJid !== 'status@broadcast' || key.fromMe || !minutes) continue;
+      const queuedAt = Date.now();
+      pending.set(key.id, {
+        key: { ...key, remoteJid: 'status@broadcast', fromMe: false },
+        queuedAt,
+        dueAt: queuedAt + (minutes * 60 * 1000),
+      });
+      console.log(`[autoview] queued status ${key.id}; receipt due in ${minutes} minute(s)`);
+      scheduleNextFlush();
+    }
+  };
+
+  if (socket.__saffulRawDispatcher?.onUpsert) {
+    socket.__saffulRawDispatcher.onUpsert(handleMessagesUpsert);
+  } else {
+    socket.ev.on('messages.upsert', handleMessagesUpsert);
+  }
+}
+
+// Capture the socket on any normal text message. The .autoview command also
+// attaches it directly, so the very command that enables the feature is enough.
+smd({ on: 'text', dontAddCommandList: true, filename: __filename }, async (message, text, extras) => {
+  attach(extras?.Void || message?.bot);
+});
+
+reschedule();
+console.log(minutes ? `[autoview] enabled - viewing statuses every ${minutes} minute(s)` : '[autoview] disabled');
+
+module.exports = {
+  getMinutes: () => minutes,
+  setMinutes,
+  flush,
+  attach,
+  _pending: pending,
+};
