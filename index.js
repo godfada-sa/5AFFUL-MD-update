@@ -12,6 +12,8 @@ require(__dirname + '/patch-baileys-version.js')
 require(__dirname + '/lib/safful-optional-sharp')
 require(__dirname + '/lib/brand-console')
 require(__dirname + '/lib/safful-history-mode')
+const { installOutgoingMessagePolicy, rebrandSocket } = require(__dirname + '/lib/safful-outgoing-message-policy')
+installOutgoingMessagePolicy()
 
 // Some Signal-session internals in the legacy stack write ratchet state
 // directly to console.log. Those records are not useful operational logs and
@@ -47,34 +49,7 @@ const attachProtection = require(__dirname + '/lib/safful-protection')
 const autoView = require(__dirname + '/plugins/statusauto.smd')
 const statusSave = require(__dirname + '/lib/safful-status-save')
 const attachRawDispatcher = require(__dirname + '/lib/safful-raw-dispatcher')
-
-function rebrandMessage(value) {
-  if (typeof value === 'string') {
-    // Apply branding at the final send boundary. This also covers labels that
-    // still live inside legacy/obfuscated plugins (such as the song downloader).
-    // Do not rewrite URLs: changing a legacy source URL could make media fail.
-    if (/^https?:\/\//i.test(value)) return value;
-    const replacement = (match) => /(?:md|ᴍᴅ)/i.test(match) ? 'Safful-Md' : 'Safful';
-    return value
-      .replace(/only[_\s-]*one[_\s-]*empire/gi, 'Safful')
-      .replace(/suhail\s*tech\s*info/gi, 'Safful')
-      .replace(/suhail(?:[-_ ]*md)?/gi, replacement)
-      .replace(/empire(?:[-_ ]*md)?/gi, replacement)
-      .replace(/s[ᴜu][ʜh][ᴀa][ɪi][ʟl](?:[-_ ]?[ᴍm][ᴅd])?/gi, replacement)
-      .replace(/[ᴇe][ᴍm][ᴘp][ɪi][ʀr][ᴇe](?:[-_ ]?[ᴍm][ᴅd])?/gi, replacement);
-  }
-  if (Array.isArray(value)) return value.map(rebrandMessage);
-  if (!value || typeof value !== 'object' || Buffer.isBuffer(value)) return value;
-  return Object.fromEntries(Object.entries(value).map(([key, item]) => [key, rebrandMessage(item)]));
-}
-
-function rebrandSocket(sock) {
-  if (!sock?.sendMessage || sock.__saffulBrandingAttached) return;
-  sock.__saffulBrandingAttached = true;
-  const sendMessage = sock.sendMessage.bind(sock);
-  sock.sendMessage = (chatId, content, options) => sendMessage(chatId, rebrandMessage(content), options);
-  console.log('[branding] Safful outgoing-message branding is active');
-}
+const preserveMobileNotifications = require(__dirname + '/lib/safful-mobile-notifications')
 
 const start = async () => {
   let bot
@@ -93,6 +68,7 @@ const start = async () => {
     await bot.DATABASE.sync()
     const socket = await bot.connect()
     rebrandSocket(socket)
+    preserveMobileNotifications(socket)
     // These features need raw Baileys events (deletions and statuses), but
     // they share one dispatcher so commands are never delayed by duplicate
     // event listeners scanning the same incoming message.
