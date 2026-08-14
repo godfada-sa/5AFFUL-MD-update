@@ -16,12 +16,9 @@ cp .env.example .env
 npm start
 ```
 
-The first launch starts a new WhatsApp pairing flow. After the account is
-linked, preserve its local credentials on normal restarts:
-
-```bash
-SAFFUL_PRESERVE_AUTH_ON_RESTART=true npm start
-```
+The first launch starts a new WhatsApp pairing flow. Once linked, normal
+restarts automatically retain the local credentials. To link a different
+account, stop the bot and remove only `lib/Suhail_Baileys` before starting it.
 
 ## Ubuntu AWS deployment
 
@@ -39,7 +36,8 @@ connections and the local HTTP server is only for process diagnostics.
    sudo journalctl -u saffulbot-device1 -f
    ```
 
-5. Keep `SAFFUL_PRESERVE_AUTH_ON_RESTART=true` in the service after pairing.
+5. After pairing, simply restart the service when needed; its local session is
+   retained automatically.
 
 For each additional WhatsApp account, create a new clone, `.env`, port, and
 systemd service. Never copy another bot's `lib/Suhail_Baileys` credentials.

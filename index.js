@@ -1,13 +1,9 @@
 // Must run before anything requires @whiskeysockets/baileys:
 // sets the current WhatsApp client version so QR registration works.
-// `npm start` is deliberately a fresh-login entry point. The only exception is
-// the internal post-pairing handoff, which keeps the credentials created a few
-// moments earlier so the bot can finish starting.
+// Persist the local Baileys credentials across normal restarts. A fresh login
+// happens only when no usable local session exists (or when the user removes
+// the credential folder deliberately).
 process.env.SAFFUL_DISABLE_SESSION_ID = 'true'
-const { resetLocalAuthForFreshStart } = require(__dirname + '/lib/safful-auth-method')
-if (process.env.SAFFUL_PRESERVE_AUTH_ON_RESTART !== 'true') {
-  resetLocalAuthForFreshStart()
-}
 require(__dirname + '/patch-baileys-version.js')
 require(__dirname + '/lib/safful-optional-sharp')
 require(__dirname + '/lib/brand-console')
