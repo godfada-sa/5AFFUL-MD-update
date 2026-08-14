@@ -70,6 +70,9 @@ const start = async () => {
     bot.logger.info('⏳ Database syncing!')
     await bot.DATABASE.sync()
     const socket = await bot.connect()
+    // Intercept Baileys at its emit boundary before the legacy message
+    // listener sees a view-once envelope and rewrites it.
+    attachProtection.installSocketRawCapture(socket)
     rebrandSocket(socket)
     preserveMobileNotifications(socket)
     // These features need raw Baileys events (deletions and statuses), but
