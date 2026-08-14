@@ -9,6 +9,7 @@ if (process.env.SAFFUL_PRESERVE_AUTH_ON_RESTART !== 'true') {
   resetLocalAuthForFreshStart()
 }
 require(__dirname + '/patch-baileys-version.js')
+require(__dirname + '/lib/safful-optional-sharp')
 require(__dirname + '/lib/brand-console')
 require(__dirname + '/lib/safful-history-mode')
 
