@@ -10,6 +10,7 @@
       "safful": "pm2 start index.js --deep-monitoring --attach --name safful-md",
       "start": "node index.js",
       "stop": "pm2 stop safful-md",
+      "build:protected": "node scripts/build-protected.js",
       "dbs--postinstall": "npx puppeteer@latest install --y"
    },
    "author": "Safful",
@@ -70,6 +71,7 @@
       "plugins": "lib/plugins"
    },
    "devDependencies": {
+      "javascript-obfuscator": "^5.5.0",
       "pino": "^7.0.5"
    },
    "repository": {},

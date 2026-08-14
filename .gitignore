@@ -1,6 +1,7 @@
 # dependencies
 node_modules/
 safful-webjs/
+release-protected/
 
 # environment / secrets
 .env
