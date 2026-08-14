@@ -10,6 +10,10 @@ require(__dirname + '/lib/brand-console')
 require(__dirname + '/lib/safful-history-mode')
 const { installOutgoingMessagePolicy, rebrandSocket } = require(__dirname + '/lib/safful-outgoing-message-policy')
 installOutgoingMessagePolicy()
+const preserveMobileNotifications = require(__dirname + '/lib/safful-mobile-notifications')
+// Install before the legacy core is loaded. This makes its own listeners use
+// the guarded socket rather than attaching the protection after login.
+preserveMobileNotifications.installMobileNotificationGuard()
 
 // Some Signal-session internals in the legacy stack write ratchet state
 // directly to console.log. Those records are not useful operational logs and
@@ -45,7 +49,6 @@ const attachProtection = require(__dirname + '/lib/safful-protection')
 const autoView = require(__dirname + '/plugins/statusauto.smd')
 const statusSave = require(__dirname + '/lib/safful-status-save')
 const attachRawDispatcher = require(__dirname + '/lib/safful-raw-dispatcher')
-const preserveMobileNotifications = require(__dirname + '/lib/safful-mobile-notifications')
 
 const start = async () => {
   let bot
