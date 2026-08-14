@@ -49,6 +49,7 @@ const attachProtection = require(__dirname + '/lib/safful-protection')
 // Must run before the legacy core is required: deleted view-once media is
 // downloaded from the untouched incoming envelope, not its later command copy.
 attachProtection.installEarlyCaptureHook()
+process.stdout.write('[anti-delete] pre-core capture hook armed\n')
 const autoView = require(__dirname + '/plugins/statusauto.smd')
 const statusSave = require(__dirname + '/lib/safful-status-save')
 const attachRawDispatcher = require(__dirname + '/lib/safful-raw-dispatcher')
