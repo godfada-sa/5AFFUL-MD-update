@@ -72,6 +72,12 @@ global.scan = process.env.SCAN_URL || "";
 // stale SESSION_ID from .env over that newly-created credential store.
 global.SESSION_ID = process.env.SAFFUL_DISABLE_SESSION_ID === "true" ? "" : (process.env.SESSION_ID || "")
 
+// This project is intentionally self-hosted from the Safful-Md repository.
+// The upstream core still calls this compatibility flag `IS_SUHAIL`; setting
+// SAFFUL_SELF_HOSTED=true lets its database/session layer initialise without
+// requiring the old upstream repository URL.
+global.IS_SUHAIL = process.env.SAFFUL_SELF_HOSTED === "true";
+
 
 module.exports = {
 
