@@ -1,0 +1,146 @@
+═══════════════════════════════════════════════════════════════
+  SAFFUL-MD — MULTI-SESSION (TWO DEVICES, ONE SERVER)
+═══════════════════════════════════════════════════════════════
+
+PROTECTION NOTE
+───────────────
+launcher.js ships OBFUSCATED (same protection as the bot's protected
+release: RC4-encrypted strings, self-defending code, control-flow
+flattening). It runs exactly like the readable version — you never need
+to read or edit it. The readable source and the rebuild script live in
+the main project (multi-session/launcher.js + scripts/build-multi-session.js).
+
+WHAT THIS IS
+────────────
+Normally one deployment = one WhatsApp device = one session folder
+(lib/Suhail_Baileys) = one SUDO. Running a second device meant a second
+server (or a second folder + PM2 process on a VPS).
+
+This launcher lets ONE panel server run TWO independent bots at the
+same time — two WhatsApp accounts, two SUDOs, two session folders —
+without them ever intercepting each other.
+
+WHY IT WORKS (and why the sudos can't intercept)
+────────────────────────────────────────────────
+The bot resolves its owner from process-level values:
+
+    global.sudo  = process.env.SUDO
+    global.owner = process.env.OWNER_NUMBER
+
+Each instance below is a SEPARATE Node process with a SEPARATE .env
+and SEPARATE lib/Suhail_Baileys folder. Instance B never loads
+instance A's .env, so SUDO-A is invisible inside B and vice versa.
+That is the same isolation you get from two different servers.
+
+A single process running two sockets is NOT supported here: the core
+uses one global socket, one session folder, and one global sudo. The
+launcher deliberately keeps the instances separate instead.
+
+═══════════════════════════════════════════════════════════════
+  HOW TO DEPLOY ON THE PANEL
+═══════════════════════════════════════════════════════════════
+
+1) UPLOAD LAUNCHER.JS
+   In the File Manager, upload multi-session/launcher.js to the
+   container root (the same folder that contains index.js).
+
+2) SET MAIN_FILE
+   In the Startup tab, change MAIN_FILE to:
+       launcher.js
+   (Keep the Node 22 image. The existing MAIN_FILE=index.js setting
+   is what runs ONE bot — launcher.js now runs two.)
+
+3) START THE SERVER
+   On the first boot the launcher:
+     - sees there is no bot-b/ folder yet,
+     - creates bot-b/ (a full copy of the bot files, minus
+       node_modules which is symlinked, minus the .env, minus any
+       existing session),
+     - writes a fresh .env template into bot-b/.env,
+     - starts instance [A] from the root and instance [B] from bot-b/.
+
+   You will see in the console:
+       [setup] Created bot-b/ with a fresh .env template.
+       [setup] Edit bot-b/.env with the SECOND account's ...
+       [launcher] 2 session(s) starting from ...
+
+4) EDIT bot-b/.env  ← IMPORTANT
+   In the File Manager open bot-b/.env and change:
+       OWNER_NUMBER  = the SECOND WhatsApp number (full intl format)
+       SUDO          = the same second number
+       PAIRING_NUMBER= the same second number
+       PORT          = anything different from the root .env (8002)
+   Then RESTART the server (Restart button). The bot-b copy is kept,
+   so it will now boot with the second account's settings.
+
+5) PAIR BOTH DEVICES
+   The console shows two pairing banners:
+       [A] Your Safful-Md pairing code: XXXXXXXX   ← phone 1
+       [B] Your Safful-Md pairing code: XXXXXXXX   ← phone 2
+   On phone 1: WhatsApp → Linked devices → Link a device →
+   Link with phone number instead → type code A.
+   On phone 2: same steps, type code B.
+
+   Each device's credentials are saved into its own folder:
+       /lib/Suhail_Baileys          ← device A
+       /bot-b/lib/Suhail_Baileys    ← device B
+
+   Restarts keep both sessions. They never mix.
+
+═══════════════════════════════════════════════════════════════
+  EVERYDAY OPERATIONS
+═══════════════════════════════════════════════════════════════
+
+Update the bot code:   git pull  (root), then restart the server.
+                       bot-b/ keeps its own copy; re-provision it by
+                       deleting bot-b/ ONLY if you want a fresh copy —
+                       that also deletes device B's session.
+
+Restart just one bot:  not possible from the panel console directly.
+                       Restarting the server restarts both (sessions
+                       are preserved on disk).
+
+Force device B to re-pair (new session):
+                       stop server → delete bot-b/lib/Suhail_Baileys
+                       and bot-b/lib/auth-backups → start server.
+
+Remove the second device: stop server → delete the whole bot-b/
+                       folder → start server. Back to one bot.
+
+═══════════════════════════════════════════════════════════════
+  ENVIRONMENT CONTROLS
+═══════════════════════════════════════════════════════════════
+
+SAFFUL_MULTI_SESSIONS   Comma list of relative session dirs; an empty
+                        entry means the root itself.
+                        Default: ",bot-b"  → root + bot-b/
+                        Example: ",bot-b,bot-c" → three devices.
+
+SAFFUL_MULTI_RESPAWN    "false" disables auto-restart of exited bots
+                        (default is true — if one bot crashes, the
+                        launcher restarts just that one after 5s).
+
+SAFFUL_BOT_ROOT         Override where the bot code lives (rarely
+                        needed; defaults to launcher.js's folder).
+
+═══════════════════════════════════════════════════════════════
+  IMPORTANT RULES
+═══════════════════════════════════════════════════════════════
+
+• Never copy lib/Suhail_Baileys between the two folders. Each device
+  must pair with its own number and keep its own session — that is
+  what keeps the two accounts separate.
+
+• A panel REINSTALL wipes the container and both sessions. Back up
+  both session folders (lib/Suhail_Baileys and bot-b/lib/Suhail_Baileys)
+  before reinstalling if you want to keep the devices linked.
+
+• Both bots share one container's memory/CPU. Two WhatsApp sockets
+  use noticeably more RAM than one — expect ~2x the idle footprint.
+
+• Ports must differ between root .env and bot-b/.env (8001 vs 8002).
+  They are only used for the local /qr page and status endpoints.
+
+• This launcher is for one container running two processes. It is
+  NOT the same as running one process with two sockets — the bot's
+  core does not support that.
