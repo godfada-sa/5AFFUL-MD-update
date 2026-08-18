@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-08-18T23:09:42.040Z",
+  "generatedAt": "2026-08-18T23:25:28.785Z",
   "protectedFiles": [
     {
       "file": ".env.example",
@@ -11,7 +11,7 @@
     },
     {
       "file": "index.js",
-      "sha256": "57735204f034d6b99b5ca4bfde865d0575f2823f4d4106782361fe78b90324bb"
+      "sha256": "b328fcfc3b79680978c9c6e72db796b8f798c3883a220ec9dafb66918ae608a1"
     },
     {
       "file": "lib/assets/index.html",
