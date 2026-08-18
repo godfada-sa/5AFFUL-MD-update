@@ -1,0 +1,403 @@
+{
+  "generatedAt": "2026-08-18T23:04:04.539Z",
+  "protectedFiles": [
+    {
+      "file": ".env.example",
+      "sha256": "306d41ab84ebfb3e8b19918e066f577c87743a0e751a39dcdfb7f58db2c8c51a"
+    },
+    {
+      "file": "app.json",
+      "sha256": "2325073d07d22ccaa11be5c0fb00d20f9bfa4900afb140e77f36f30cf394af84"
+    },
+    {
+      "file": "config.js",
+      "sha256": "8e3b789a1ff8baf3a9da6ccfe8ab6c9b09793cb6e00474c18d3a97ea4295c770"
+    },
+    {
+      "file": "index.js",
+      "sha256": "57735204f034d6b99b5ca4bfde865d0575f2823f4d4106782361fe78b90324bb"
+    },
+    {
+      "file": "lib/assets/index.html",
+      "sha256": "d8247fead060a97befca03aa23175dfefe262cd03614b4d178cbd00548bf7db1"
+    },
+    {
+      "file": "lib/assets/pk.jpg",
+      "sha256": "09f208e03b495417fa83effa36493a5c430000744a210be23005a116d6a1dd1a"
+    },
+    {
+      "file": "lib/assets/safful-menu.jpg",
+      "sha256": "a4094acb3c54fa548fb6ef5fef9bd17782dc607382d8323adf52e9626d4fd570"
+    },
+    {
+      "file": "lib/assets/Suhail MD",
+      "sha256": "6d7a37e2a096c0a6181f9f5284a023d3ef6d88b9bda03b90288ff8172d027ab4"
+    },
+    {
+      "file": "lib/assets/suhail.jpg",
+      "sha256": "b1e11cda5c80c700e7edf1a1a54fc8170325e18767631c969ee05d6db2641437"
+    },
+    {
+      "file": "lib/assets/suhail_old.jpg",
+      "sha256": "b1e11cda5c80c700e7edf1a1a54fc8170325e18767631c969ee05d6db2641437"
+    },
+    {
+      "file": "lib/brand-console.js",
+      "sha256": "8f64da330a68fc78a12475d40721ba9f16be582206c5984f191b75ca29170915"
+    },
+    {
+      "file": "lib/class/init.js",
+      "sha256": "1609f28f30bafd0c63c9cad3882b31ac1e75efed43002dcecd761c0738bb48b0"
+    },
+    {
+      "file": "lib/database/alive.js",
+      "sha256": "dcae9f088964d37b1ee3c9663c71b307667702a4893961e4b3ddda8beab77da5"
+    },
+    {
+      "file": "lib/database/group.js",
+      "sha256": "76470597cf3a3a10a97bb2769b747ae0e3cfe5d959a02118caadc1d4ee443af4"
+    },
+    {
+      "file": "lib/database/tempdb.js",
+      "sha256": "2e801decd27721b720a02edb7205f0070c75a6a1abdf4d5a28f92d00d0387094"
+    },
+    {
+      "file": "lib/database/user.js",
+      "sha256": "4f3f330a3a5cde22418393d9a7b5fd7a68ba9e9ea0a454155330c782cea8005f"
+    },
+    {
+      "file": "lib/exif.js",
+      "sha256": "e3af51545d27aaa02815060345e77449a35378516c09613cad4b75f527d28ac2"
+    },
+    {
+      "file": "lib/index.js",
+      "sha256": "86fc8f3dbd3b08fa695e33db0f32334351cd899bbf9510773dd208bb3c436824"
+    },
+    {
+      "file": "lib/koyeb.js",
+      "sha256": "42b4d6948c7d6598e3c22ce0a9b59e11ffe78c3fa70e7ab16ed5ba6ab471719c"
+    },
+    {
+      "file": "lib/plugins.js",
+      "sha256": "a8654696e9f2ba2439c396ecb1737d68fbe63f741741e58dac3fdaf776f21997"
+    },
+    {
+      "file": "lib/safful-auth-method.js",
+      "sha256": "6eef35dbe00bb7b87ac4d563154a660f1aa9f425173b2398f0904b64123512d5"
+    },
+    {
+      "file": "lib/safful-auth-recovery.js",
+      "sha256": "b6bb56e635213c9d8c8d6e841e7616c6c9ec82e3411891841324ad11250a1cb9"
+    },
+    {
+      "file": "lib/safful-history-mode.js",
+      "sha256": "070479c17651141ce8447b52e294c762c40333573e9f56aa4fffc92940603dae"
+    },
+    {
+      "file": "lib/safful-mobile-notifications.js",
+      "sha256": "d72d317b52486e38cf4b53063cc089d28882224f840bf7521bca5bed2319aee3"
+    },
+    {
+      "file": "lib/safful-mode.js",
+      "sha256": "bff30c5ec7de592743704a0294e5b53ed811738c9d83a35fce9cbf565eca2df8"
+    },
+    {
+      "file": "lib/safful-optional-sharp.js",
+      "sha256": "abc8e40a470ea04855a73508b21b7fedcde6fcae67e6bd802cf80ac338a7a71c"
+    },
+    {
+      "file": "lib/safful-outgoing-message-policy.js",
+      "sha256": "279b578704f5b0945a7a4e94ca9ed0c5997b9ead7586a7e4e2f03b35d12c1b02"
+    },
+    {
+      "file": "lib/safful-pairing-bootstrap.js",
+      "sha256": "a6ed2672e7de4672a4bbd1906ac23f9421f6a955f07d0baaad6fec24a2b023ea"
+    },
+    {
+      "file": "lib/safful-protection.js",
+      "sha256": "3273a0d778441882ec6628d2a74fe69ef8184dbc2cc1358da17a6895c2e3411a"
+    },
+    {
+      "file": "lib/safful-raw-dispatcher.js",
+      "sha256": "a26ba34b0eb43cfd6990b4d9b858430043dce65dfe75c0abee84d4bc2c073c35"
+    },
+    {
+      "file": "lib/safful-status-save.js",
+      "sha256": "54a5f9774e4de2ef940294c463b3dad2ff61d471263667060318563f2606a0b2"
+    },
+    {
+      "file": "lib/safful-ytdlp.js",
+      "sha256": "9667e0aa4dc784cb7c83536a978353db231e0a636593231fe63923e065a6fb8d"
+    },
+    {
+      "file": "lib/schemes.js",
+      "sha256": "51a9100b10b55d246085b8da1e1480fc5e29aa9f6d1ae047b7dfe4585324c62d"
+    },
+    {
+      "file": "lib/scraper.js",
+      "sha256": "49cbf29b29b84ac8a4b3a1869b6d91685d480df3a228412785ad42b5d4a2e1d8"
+    },
+    {
+      "file": "lib/serialized.js",
+      "sha256": "08dffdd7a677004b0d0826497194bc3c68a457a8f33855d7f97befb283397622"
+    },
+    {
+      "file": "lib/store-shim.js",
+      "sha256": "647d84429419118fc252786fa67aa1fd262c59d958f240f13e5d2fcb7787daf1"
+    },
+    {
+      "file": "lib/stylish-font.js",
+      "sha256": "a31b45b6c94d25759b5c9dd7bce6a8052ec98b502a80164e29108fb0e45bcd1d"
+    },
+    {
+      "file": "lib/suhail.js",
+      "sha256": "9de51a3c9398bd6dd75b99c6a2ff1fd40235b0ade4bae6fa178720bd2de3218d"
+    },
+    {
+      "file": "lib/ttt.d.ts",
+      "sha256": "79188ccf0ac4bcedf71a20b2a8f7ef49df13040eb00d61c2ffe35f64a7905512"
+    },
+    {
+      "file": "lib/ttt.js",
+      "sha256": "a6840386fbd28cdff088f666e0f7a85649f68941ca9cd581337c8a93debe567a"
+    },
+    {
+      "file": "LICENSE",
+      "sha256": "f61450500d90b972bac512b850453900591561154b971c601a19432f57968b72"
+    },
+    {
+      "file": "patch-baileys-version.js",
+      "sha256": "835e14e20970588a702b9522f3fc2e2c30185716f8800ebee335bee8fb03c59f"
+    },
+    {
+      "file": "plugins/astatus.js",
+      "sha256": "64d919a4a60ec6cec6597c5a62614751443611506895f2b18281c60505edc33b"
+    },
+    {
+      "file": "plugins/autoview.js",
+      "sha256": "fa9f2bd544c90b7beaaf2080c4c1d1e2dec81a63682f23debe7a51b1d68ec996"
+    },
+    {
+      "file": "plugins/broadcast.js",
+      "sha256": "68b3da4580dc9533f526e61d3e1c5e72c9a9728004f40ead533f17e06457879d"
+    },
+    {
+      "file": "plugins/chats.smd",
+      "sha256": "c1b531f66cf96e01b4c75e18b713a98a6e8576a6967dc0a8a4051eac886fafdb"
+    },
+    {
+      "file": "plugins/converter.smd",
+      "sha256": "11775b6b9ab9b25d78e7e5567cb0c63c7067f2f7ec6631cd2efc0f09505e4449"
+    },
+    {
+      "file": "plugins/core.js",
+      "sha256": "ab0dc7fc28be053c0d99b49471c0ce1f91dbcf1accecf01b8da2c3a8da62e727"
+    },
+    {
+      "file": "plugins/delete.js",
+      "sha256": "e18626206da70a551f45f53efa18251fbe7b26f5f62f945311e05f538aab517a"
+    },
+    {
+      "file": "plugins/downloader.smd",
+      "sha256": "25f46029566977be3bafed9050a46c942b55a7951ea95820a60c7f286a3bb3e4"
+    },
+    {
+      "file": "plugins/economy.smd",
+      "sha256": "3123a2aa2fbbfc2b27e0c071559a97368f9171921c07953c701a0f342ba5bffc"
+    },
+    {
+      "file": "plugins/editorpack.smd",
+      "sha256": "112690548c53c959caff61447a5dc8199d1412527177f20d7f89bd4ea30061b6"
+    },
+    {
+      "file": "plugins/fun.smd",
+      "sha256": "51325284416dc6acc283328f6165c61737560d76b901e3c4ef9d4349bb4a877d"
+    },
+    {
+      "file": "plugins/git-init.js",
+      "sha256": "b5dbcad1ffbaa894738efa1eeeb01b457475f30fd16525b138ca01739ef0004b"
+    },
+    {
+      "file": "plugins/group.smd",
+      "sha256": "1827a62bbcda010fecb7d80050718d95f6ec0f92e5232a4c445e41de6329de4e"
+    },
+    {
+      "file": "plugins/meme.say/anime.png",
+      "sha256": "397e437a751c1ea16d74824fab0e11da653e1b263754be240fda12a9376e2ab7"
+    },
+    {
+      "file": "plugins/meme.say/elon.jpg",
+      "sha256": "bc4d7ddc1c6b0c9b9d2a381d264b48a741bca7f6efd61bee337c4ef822bc0aab"
+    },
+    {
+      "file": "plugins/meme.say/imran.png",
+      "sha256": "adddac5a77e5e25192ce44a630db514066b10fe6599975c0120dd6f04c461fb0"
+    },
+    {
+      "file": "plugins/meme.say/johni.png",
+      "sha256": "6b056cdab56bf1c350e44fcc602d2962921cea77d672761436a166a89f94d6eb"
+    },
+    {
+      "file": "plugins/meme.say/mark.png",
+      "sha256": "1fe4a189149d84be4882c5f50aa3a7f5560765e33a1fc7cc4f2deb8de892db52"
+    },
+    {
+      "file": "plugins/meme.say/mia.png",
+      "sha256": "5a45fd71936dc4fcfca913a6cd0bff324995fcf45b02d4eb6b269a62700718f0"
+    },
+    {
+      "file": "plugins/meme.say/modi.png",
+      "sha256": "c034b1b317eeea7651111c7fee948f1be3f17d6308a1e476d8fd71ecafb11b0b"
+    },
+    {
+      "file": "plugins/meme.say/ronaldo.png",
+      "sha256": "3995d81197aff931165c431a238b222ff2f03e0be5298ae90ee2e036587d146b"
+    },
+    {
+      "file": "plugins/meme.say/Suhail MD",
+      "sha256": "6d7a37e2a096c0a6181f9f5284a023d3ef6d88b9bda03b90288ff8172d027ab4"
+    },
+    {
+      "file": "plugins/meme.say/trumSay.png",
+      "sha256": "350f678d81745e6a51afb6f25d9f05081b5e6a0ec03af66c3379c469507333f6"
+    },
+    {
+      "file": "plugins/menu.js",
+      "sha256": "bb9d55ec4d88d064de20a0dfe31d7f77f4ba972321eabda9bad8b381baea6d72"
+    },
+    {
+      "file": "plugins/mode.js",
+      "sha256": "9e81a511ba06a8ac0565e252b30c8024ab99da882d098a23f66fbfb401d7ab59"
+    },
+    {
+      "file": "plugins/owner-tools.js",
+      "sha256": "ad98e9a45daaaf6bb36b6e81fd3d1cb7b233a3475f9e967c6d7b67131cdf11b1"
+    },
+    {
+      "file": "plugins/protection.js",
+      "sha256": "9aefafcd71ab99704394bd90f1d731b9c254197bcb058c9fda01fc746c75b2be"
+    },
+    {
+      "file": "plugins/save.js",
+      "sha256": "3d2635c291c873b17b2fceb82eba13da628d9f07f6c7f9effc96113d2b9e911f"
+    },
+    {
+      "file": "plugins/savestatus.js",
+      "sha256": "104083c6d91f6731b46e2e1330a7f23f747e20c2183c2f69867ec8c3dea95d0b"
+    },
+    {
+      "file": "plugins/statusauto.smd",
+      "sha256": "3aaaeb91446fbb4d40974e79d87e9dcd0aeef45b2b5d6c70ba11788ebb753344"
+    },
+    {
+      "file": "plugins/tagnotadmin.js",
+      "sha256": "48e397000d28e40fe19b08b4ba7ea9456f6f671f9f9bc64f35a31fbb8678c22e"
+    },
+    {
+      "file": "plugins/tiktok.js",
+      "sha256": "eb403dcd57b8d0f1b2580a9b58c07ad2959fac5afc829e3e895a4b5b1fcd227b"
+    },
+    {
+      "file": "plugins/tkick.js",
+      "sha256": "055d403ad2be91b80def0dc1859f41681628a1e8f04b8844a48977ae2ef28e27"
+    },
+    {
+      "file": "plugins/user.smd",
+      "sha256": "bb2393c72f1dfe1a951016f81d089d86c8c4e42a6d81510922948504aee2c2b8"
+    },
+    {
+      "file": "plugins/x.js",
+      "sha256": "add0265c20f46b8c0dc3c1d95c23f3cfc60abcf05731339e30c3940507ce6fde"
+    },
+    {
+      "file": "plugins/zz-safful-command-prune.js",
+      "sha256": "4dc454042b346b028aff7b4969fd1e9fef04fd04d21d5022abe2a920d0e75ab7"
+    },
+    {
+      "file": "plugins/zzzz-safful-song.js",
+      "sha256": "5af6a9dd615e4b65562a5c550592912bab82d2d47a686be6941b7f33f41fcfb9"
+    },
+    {
+      "file": "Themes/ADAM.json",
+      "sha256": "b52ebb087e2efda82761457b1142e0a33ae7b64c23432b158ac567deb55ee336"
+    },
+    {
+      "file": "Themes/AYANOKOJI.json",
+      "sha256": "095bc46abd87901dca015da4bfb2014d3f24ed211b3face48cc086fdaf98053e"
+    },
+    {
+      "file": "Themes/EDITH.json",
+      "sha256": "00e264d5aeec1c5d9a46a6d8aee346eee870bd4e08b3ec5ae65f3cc9ad5afb45"
+    },
+    {
+      "file": "Themes/FRIDAY.json",
+      "sha256": "487054f432a6f54f2e1c28a6aabd233ebae1f3835b5f704132af076c15210e9f"
+    },
+    {
+      "file": "Themes/GENOS.json",
+      "sha256": "f0b30ea40c0eab21f9f602f56282cd18c6d7f704987d17903087802b03269a67"
+    },
+    {
+      "file": "Themes/GIDEON.json",
+      "sha256": "afdc4f3b0ee646f6aa2150b407961d59c8e136c3f002ee9e5a4615df3c742e8e"
+    },
+    {
+      "file": "Themes/GOJO.json",
+      "sha256": "674a7512548e75a2ccc26c881dda42cea1446d157b89fc0a31cff8216b6ff244"
+    },
+    {
+      "file": "Themes/GOKU.json",
+      "sha256": "da34e760b7eac0c0194c27bc841ae4eab8bada6ebd41584bf61a0349cf52748f"
+    },
+    {
+      "file": "Themes/LUFFY.json",
+      "sha256": "f0e9f46569e89f35d813fc042b03a8a11189579a952d8870b5a1bee366c159c8"
+    },
+    {
+      "file": "Themes/NARUTO.json",
+      "sha256": "6b357ad98aa9776aaeae07a99d46a9fa886c4468ae9361340bba73c0958c345d"
+    },
+    {
+      "file": "Themes/NEZUKO.json",
+      "sha256": "c2c51ba9caf0e9cf27d87489e09b94278d3ca32d778a28aff39a2874212657dd"
+    },
+    {
+      "file": "Themes/PARKER.json",
+      "sha256": "229680ee34e338d0cb65c04187df4c133b13134c1d8f7cff43f7f6e50501f4ea"
+    },
+    {
+      "file": "Themes/SAFFUL.json",
+      "sha256": "6735084d03e8c11fa9384b37b3da894d22b31bc1357aa8d7cccc3141f3467e08"
+    },
+    {
+      "file": "Themes/SECKTOR.json",
+      "sha256": "7c656bd074af565c1123728f109d05f1ce2e11cd3deb73783ed46a862bbe7b7e"
+    },
+    {
+      "file": "Themes/SUHAIL.json",
+      "sha256": "a228bbb72efcc6ba766b83daa8fce9251b9e90aeae55e6a4f9c23c98590682b0"
+    },
+    {
+      "file": "Themes/ZEROTWO.json",
+      "sha256": "43c8f09dccf944ca4f2b5f3249d218c8b21dc103b950e4dc44e9292f7ce3e1a4"
+    },
+    {
+      "file": "Procfile",
+      "sha256": "81b90fcf770d12e240d8da6c447af821f1fb01eda0a12406d6fc26221e8e40e5"
+    },
+    {
+      "file": "Suhail-X",
+      "sha256": "aaa834ebfec87f825e90edd38800ec71306a2abaff4060ce8b6e8dedbf154ae0"
+    },
+    {
+      "file": "README.md",
+      "sha256": "7aa7a974a69dd6f86b68e0ab993ddc9c3de308d25ff397c5c8bf95bab00b72a4"
+    },
+    {
+      "file": "plugins/00-safful-integrity-check.js",
+      "sha256": "932ab9c11114c365e1df076043a5e61f32429e7b41239fb8491bd9bfcb1cdaeb"
+    }
+  ],
+  "notice": "This release intentionally contains obfuscated runtime code and no local credentials or .env file.",
+  "note": "smd.js excluded from integrity check (too large for panel OOM)"
+}
