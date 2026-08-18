@@ -140,7 +140,16 @@ global.aitts_Voice_Id = process.env.AITTS_ID|| "37";
 global.rank = "updated"
 global.isMongodb = false; 
 let file = require.resolve(__filename)
-fs.watchFile(file, () => { fs.unwatchFile(file);console.log(`Update'${__filename}'`);delete require.cache[file];	require(file); })
+let __saffulConfigReloading = false
+fs.watchFile(file, () => {
+  if (__saffulConfigReloading) return  // prevent recursive reload
+  __saffulConfigReloading = true
+  fs.unwatchFile(file)
+  console.log(`Update'${__filename}'`)
+  delete require.cache[file]
+  try { require(file) } catch (e) { console.error('[config] reload failed:', e.message) }
+  __saffulConfigReloading = false
+})
  
 
 // ========================= [ Disables in V.1.2.8 ] ===============================\\  

@@ -24,6 +24,27 @@ saffulCheckNodeVersion()
 
 const fs = require('fs')
 const path = require('path')
+
+// ── Temp File Cleanup ────────────────────────────────────────────────────
+// On startup, remove stale temp files left behind by sticker/audio processing
+// (lib/exif.js) that weren't cleaned up after a previous crash. Only files
+// older than 1 hour are removed to avoid deleting files from a concurrent run.
+// ──────────────────────────────────────────────────────────────────────────
+try {
+  const tempDir = path.join(__dirname, 'temp')
+  if (fs.existsSync(tempDir)) {
+    const cutoff = Date.now() - 60 * 60 * 1000  // 1 hour
+    for (const name of fs.readdirSync(tempDir)) {
+      if (name === '.gitkeep' || name === '.gitignore') continue
+      try {
+        const fp = path.join(tempDir, name)
+        const stat = fs.statSync(fp)
+        if (stat.isFile() && stat.mtimeMs < cutoff) fs.unlinkSync(fp)
+      } catch {}
+    }
+  }
+} catch {}
+
 // ---------------------------------------------------------------------------
 // Real-time log streaming. Hosting panels (Pterodactyl, PM2, docker) capture
 // process output through a pipe, and Node buffers pipe writes asynchronously:
@@ -138,13 +159,14 @@ process.on('uncaughtException', (error) => {
     __saffulCrashWindowStart = now
   }
   __saffulCrashCount += 1
-  process.stdout.write(`[boot] UNCAUGHT EXCEPTION (crash #${__saffulCrashCount}): ${error?.stack || error}\n`)
-  // If crashing in a tight loop (5+ in 10 min), stay dead — PM2 will handle backoff.
+  process.stdout.write(`[uptime] UNCAUGHT EXCEPTION (crash #${__saffulCrashCount}): ${error?.stack || error}\n`)
+  // Many uncaught exceptions are recoverable (plugin errors, stale refs).
+  // Only kill the process if it's crashing in a tight loop (5+ in 10 min).
   if (__saffulCrashCount >= 5) {
-    process.stdout.write('[boot] Too many crashes in short window — staying dead for PM2 backoff.\n')
+    process.stdout.write('[uptime] Too many crashes in short window — exiting for PM2 backoff.\n')
     process.exit(1)
   }
-  process.exit(1)
+  // Let the event loop continue — most exceptions are transient.
 })
 process.on('unhandledRejection', (reason) => {
   process.stdout.write(`[uptime] UNHANDLED REJECTION (suppressed): ${reason?.stack || reason}\n`)
@@ -297,7 +319,76 @@ const start = async () => {
     const socket = await bot.connect()
     process.stdout.write('[boot] socket created\n')
 
-    // ── Uptime Guardian ──────────────────────────────────────────────────
+    // Stream the socket lifecycle to the panel even though the legacy core
+    // runs Baileys with a silent logger and silences console.log.
+    const reportConnection = (update = {}) => {
+      const state = String(update.connection || '')
+      if (!state || state === lastConnectionState) return
+      lastConnectionState = state
+      const error = update.lastDisconnect?.error
+      const reason = error ? ` — ${error?.message || error}` : ''
+      process.stdout.write(`[boot] connection state: ${state}${reason}\n`)
+    }
+    socket.ev?.on?.('connection.update', reportConnection)
+
+    // Recovery watchdog: a socket that never reaches 'open' is either blocked
+    // egress or a stale session. Never leave the bot silently dead.
+    //
+    // CRITICAL: the session folder is NEVER auto-archived here. Archiving is
+    // what caused the 'already paired but cleared on restart' loop: a restart
+    // right after the phone confirmed the link left `registered: false`, the
+    // watchdog renamed the whole folder away, and the next boot asked to pair
+    // again. Levanter never touches its session folder — neither do we. A
+    // stalled socket just restarts the process with the session intact, and
+    // Baileys re-registers on reconnect. If the operator wants a fresh login,
+    // they delete lib/Suhail_Baileys themselves.
+    //
+    // Fresh logins (QR/pairing) get a longer window because they need human
+    // time to open /qr and scan before the registration completes.
+    const freshLogin = global.__saffulAuthMethod === 'pairing' || global.__saffulAuthMethod === 'qr'
+    const stallTimeoutMs = 5 * 60 * 1000
+    let opened = false
+    const sessionLive = () => opened || global.__saffulSocketOpened === true
+    const recoverStalledConnection = () => {
+      if (sessionLive()) return
+      process.stdout.write(
+        freshLogin
+          ? '[boot] still waiting for login (QR/pairing) after 5 minutes — restarting to refresh the login screen; session preserved.\n'
+          : '[boot] connection did not open — restarting the process to retry; session preserved (never auto-cleared).\n',
+      )
+      process.exit(1)
+    }
+    const watchdog = setTimeout(recoverStalledConnection, stallTimeoutMs)
+    watchdog.unref?.()
+    socket.ev?.on?.('connection.update', ({ connection } = {}) => {
+      if (connection === 'open') {
+        opened = true
+        clearTimeout(watchdog)
+        process.stdout.write('[boot] connection open\n')
+      }
+    })
+    const livenessPoll = setInterval(() => {
+      if (!sessionLive()) return
+      clearTimeout(watchdog)
+      clearInterval(livenessPoll)
+      if (!opened) process.stdout.write('[boot] session confirmed live on restarted socket — watchdog disarmed\n')
+    }, 5000)
+    livenessPoll.unref?.()
+
+    bootPhase = 'attach-hooks'
+    // Intercept Baileys at its emit boundary before the legacy message
+    // listener sees a view-once envelope and rewrites it.
+    attachProtection.installSocketRawCapture(socket)
+    rebrandSocket(socket)
+    preserveMobileNotifications(socket)
+    // These features need raw Baileys events (deletions and statuses), but
+    // they share one dispatcher so commands are never delayed by duplicate
+    // event listeners scanning the same incoming message.
+    attachRawDispatcher(socket, { attachProtection, autoView, statusSave })
+    notifyConnectedOnce(socket)
+    process.stdout.write('[boot] hooks attached — ready\n')
+
+    // ── Uptime Guardian (MUST be last emit wrapper) ─────────────────────
     // WhatsApp forces a session rotation (status 515) every ~12-24 hours.
     // The obfuscated core catches this and calls process.exit(1), killing
     // the bot and resetting PM2 uptime. This guardian intercepts the
@@ -305,6 +396,11 @@ const start = async () => {
     // disconnects (515 restartRequired, 408 timedOut) it suppresses the event
     // so the core never sees it and never exits. Baileys handles reconnection
     // internally — the core just needs to not kill itself.
+    //
+    // CRITICAL: This MUST be installed AFTER preserveMobileNotifications and
+    // installSocketRawCapture so it becomes the outermost emit wrapper. If
+    // installed before them, their emit replacement would overwrite this
+    // guardian and the suppression would stop working.
     //
     // Fatal disconnects (401 loggedOut, 403 forbidden, 411 mismatch, 440
     // replaced, 500 badSession) are left alone — those genuinely need a
@@ -325,11 +421,8 @@ const start = async () => {
               `[uptime] Reconnectable disconnect (code ${statusCode}, count ${_uptimeReconnectCount}) — ` +
               `suppressing to prevent unnecessary restart. Baileys will reconnect.\n`,
             )
-            // Do NOT emit — core never sees it, never calls process.exit()
-            // Baileys detects the WebSocket close internally and reconnects.
             return true
           }
-          // Track when we reconnect successfully after a suppressed disconnect
           if (update?.connection === 'open' && _uptimeReconnectCount > 0) {
             process.stdout.write(`[uptime] Reconnected after ${_uptimeReconnectCount} suppressed disconnect(s) — uptime preserved\n`)
           }
@@ -373,85 +466,6 @@ const start = async () => {
     }, 6 * 60 * 60 * 1000)
     gcInterval.unref?.()
 
-    // Stream the socket lifecycle to the panel even though the legacy core
-    // runs Baileys with a silent logger and silences console.log.
-    const reportConnection = (update = {}) => {
-      const state = String(update.connection || '')
-      if (!state || state === lastConnectionState) return
-      lastConnectionState = state
-      const error = update.lastDisconnect?.error
-      const reason = error ? ` — ${error?.message || error}` : ''
-      process.stdout.write(`[boot] connection state: ${state}${reason}\n`)
-    }
-    socket.ev?.on?.('connection.update', reportConnection)
-
-    // Recovery watchdog: a socket that never reaches 'open' is either blocked
-    // egress or a stale session. Never leave the bot silently dead.
-    //
-    // CRITICAL: the session folder is NEVER auto-archived here. Archiving is
-    // what caused the 'already paired but cleared on restart' loop: a restart
-    // right after the phone confirmed the link left `registered: false`, the
-    // watchdog renamed the whole folder away, and the next boot asked to pair
-    // again. Levanter never touches its session folder — neither do we. A
-    // stalled socket just restarts the process with the session intact, and
-    // Baileys re-registers on reconnect. If the operator wants a fresh login,
-    // they delete lib/Suhail_Baileys themselves.
-    //
-    // Fresh logins (QR/pairing) get a longer window because they need human
-    // time to open /qr and scan before the registration completes.
-    const freshLogin = global.__saffulAuthMethod === 'pairing' || global.__saffulAuthMethod === 'qr'
-    // Existing sessions get 5 minutes (was 90s — too tight for busy VPS with
-    // 6+ bots competing for network). Fresh logins still get 5 minutes.
-    const stallTimeoutMs = 5 * 60 * 1000
-    let opened = false
-    // The core can replace the first socket: after a successful pairing it
-    // gets status 515 (Stream Errored, restart required), restarts the
-    // stream and creates a NEW socket that actually opens. The watchdog is
-    // bound to the FIRST socket's ev, so also treat 'any socket opened'
-    // (tracked by the auth hook on every socket the core creates) as proof
-    // the bot is live. Otherwise a perfectly connected bot gets killed by
-    // the timer — exactly the log you saw.
-    const sessionLive = () => opened || global.__saffulSocketOpened === true
-    const recoverStalledConnection = () => {
-      if (sessionLive()) return
-      process.stdout.write(
-        freshLogin
-          ? '[boot] still waiting for login (QR/pairing) after 5 minutes — restarting to refresh the login screen; session preserved.\n'
-          : '[boot] connection did not open — restarting the process to retry; session preserved (never auto-cleared).\n',
-      )
-      process.exit(1)
-    }
-    const watchdog = setTimeout(recoverStalledConnection, stallTimeoutMs)
-    watchdog.unref?.()
-    socket.ev?.on?.('connection.update', ({ connection } = {}) => {
-      if (connection === 'open') {
-        opened = true
-        clearTimeout(watchdog)
-        process.stdout.write('[boot] connection open\n')
-      }
-    })
-    // Disarm the watchdog the moment ANY socket (including the replacement
-    // socket the core creates after a successful pairing) reports open.
-    const livenessPoll = setInterval(() => {
-      if (!sessionLive()) return
-      clearTimeout(watchdog)
-      clearInterval(livenessPoll)
-      if (!opened) process.stdout.write('[boot] session confirmed live on restarted socket — watchdog disarmed\n')
-    }, 5000)
-    livenessPoll.unref?.()
-
-    bootPhase = 'attach-hooks'
-    // Intercept Baileys at its emit boundary before the legacy message
-    // listener sees a view-once envelope and rewrites it.
-    attachProtection.installSocketRawCapture(socket)
-    rebrandSocket(socket)
-    preserveMobileNotifications(socket)
-    // These features need raw Baileys events (deletions and statuses), but
-    // they share one dispatcher so commands are never delayed by duplicate
-    // event listeners scanning the same incoming message.
-    attachRawDispatcher(socket, { attachProtection, autoView, statusSave })
-    notifyConnectedOnce(socket)
-    process.stdout.write('[boot] hooks attached — ready\n')
   } catch (error) {
     process.stdout.write(`[boot] FAILED at '${bootPhase}': ${error?.stack || error}\n`)
     console.error('[startup] Failed to start Safful-Md:', error);
