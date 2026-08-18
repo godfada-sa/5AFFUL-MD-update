@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-08-18T23:04:04.539Z",
+  "generatedAt": "2026-08-18T23:09:42.040Z",
   "protectedFiles": [
     {
       "file": ".env.example",
@@ -8,10 +8,6 @@
     {
       "file": "app.json",
       "sha256": "2325073d07d22ccaa11be5c0fb00d20f9bfa4900afb140e77f36f30cf394af84"
-    },
-    {
-      "file": "config.js",
-      "sha256": "8e3b789a1ff8baf3a9da6ccfe8ab6c9b09793cb6e00474c18d3a97ea4295c770"
     },
     {
       "file": "index.js",
@@ -164,10 +160,6 @@
     {
       "file": "LICENSE",
       "sha256": "f61450500d90b972bac512b850453900591561154b971c601a19432f57968b72"
-    },
-    {
-      "file": "patch-baileys-version.js",
-      "sha256": "835e14e20970588a702b9522f3fc2e2c30185716f8800ebee335bee8fb03c59f"
     },
     {
       "file": "plugins/astatus.js",
