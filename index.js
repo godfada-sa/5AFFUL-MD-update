@@ -388,65 +388,65 @@ const start = async () => {
     notifyConnectedOnce(socket)
     process.stdout.write('[boot] hooks attached — ready\n')
 
-    // ── Uptime Guardian (MUST be last emit wrapper) ─────────────────────
+    // ── Uptime Guardian (process.exit override) ─────────────────────────
     // WhatsApp forces a session rotation (status 515) every ~12-24 hours.
     // The obfuscated core catches this and calls process.exit(1), killing
-    // the bot and resetting PM2 uptime. This guardian intercepts the
-    // connection.update event at the EventEmitter boundary: for reconnectable
-    // disconnects (515 restartRequired, 408 timedOut) it suppresses the event
-    // so the core never sees it and never exits. Baileys handles reconnection
-    // internally — the core just needs to not kill itself.
+    // the bot and resetting PM2 uptime.
     //
-    // CRITICAL: This MUST be installed AFTER preserveMobileNotifications and
-    // installSocketRawCapture so it becomes the outermost emit wrapper. If
-    // installed before them, their emit replacement would overwrite this
-    // guardian and the suppression would stop working.
+    // Previous approach: wrap socket.ev.emit to suppress the event. This
+    // fails because smd.js has its own reference to the original emit.
+    //
+    // New approach: override process.exit() globally. When a reconnectable
+    // disconnect (515, 408) is detected via connection.update, we set a
+    // flag and suppress process.exit(1) for 15 seconds. Baileys handles
+    // reconnection internally — the core just needs to not kill itself.
     //
     // BUG FIX: Only activate after the first successful connection. During
-    // QR/pairing login, WhatsApp sends a 515 (restartRequired) as part of
-    // the auth handshake — suppressing it blocks login from completing.
-    // Once connected for the first time, we activate the guardian.
-    //
-    // Fatal disconnects (401 loggedOut, 403 forbidden, 411 mismatch, 440
-    // replaced, 500 badSession) are left alone — those genuinely need a
-    // restart.
+    // QR/pairing login, WhatsApp sends a 515 as part of the auth handshake
+    // — suppressing exit at that point blocks login from completing.
     // ─────────────────────────────────────────────────────────────────────
     const RECONNECTABLE_CODES = new Set([408, 515])  // timedOut, restartRequired
-    if (socket?.ev) {
-      const _origEmit = socket.ev.emit.bind(socket.ev)
-      let _uptimeReconnectCount = 0
-      let _uptimeGuardianActive = false
-      // Activate guardian only AFTER the first successful connection.
-      // During QR/pairing login WhatsApp sends a 515 as part of the auth
-      // handshake — suppressing it blocks login from completing.
-      socket.ev.emit = function (event, ...args) {
-        if (event === 'connection.update') {
-          const update = args[0]
-          if (update?.connection === 'open') {
-            if (!_uptimeGuardianActive) {
-              _uptimeGuardianActive = true
-              process.stdout.write('[uptime] Guardian activated — will suppress reconnectable disconnects\n')
-            }
-            if (_uptimeReconnectCount > 0) {
-              process.stdout.write(`[uptime] Reconnected after ${_uptimeReconnectCount} suppressed disconnect(s) — uptime preserved\n`)
-            }
-          }
-          if (_uptimeGuardianActive && update?.connection === 'close') {
-            const statusCode = update?.lastDisconnect?.error?.output?.statusCode
-            || update?.lastDisconnect?.error?.data?.statusCode
-            if (RECONNECTABLE_CODES.has(statusCode)) {
-              _uptimeReconnectCount += 1
-              process.stdout.write(
-                `[uptime] Reconnectable disconnect (code ${statusCode}, count ${_uptimeReconnectCount}) — ` +
-                `suppressing to prevent unnecessary restart. Baileys will reconnect.\n`,
-              )
-              return true
-            }
-          }
-        }
-        return _origEmit(event, ...args)
+    let _uptimeGuardianActive = false
+    let _uptimeReconnectCount = 0
+    let _suppressExitUntil = 0
+
+    // Override process.exit to suppress exits during reconnectable disconnects.
+    const _origProcessExit = process.exit.bind(process)
+    process.exit = function (code) {
+      if (_suppressExitUntil > Date.now() && code !== 0) {
+        process.stdout.write(`[uptime] Suppressing process.exit(${code}) — reconnectable disconnect in progress. Baileys will reconnect.\n`)
+        return
       }
+      return _origProcessExit(code)
     }
+
+    // Listen for connection updates to detect reconnectable disconnects.
+    socket.ev?.on?.('connection.update', (update = {}) => {
+      if (update.connection === 'open') {
+        if (!_uptimeGuardianActive) {
+          _uptimeGuardianActive = true
+          process.stdout.write('[uptime] Guardian activated — will suppress reconnectable disconnects\n')
+        }
+        if (_uptimeReconnectCount > 0) {
+          process.stdout.write(`[uptime] Reconnected after ${_uptimeReconnectCount} suppressed disconnect(s) — uptime preserved\n`)
+          _uptimeReconnectCount = 0
+        }
+      }
+      if (_uptimeGuardianActive && update.connection === 'close') {
+        const statusCode = update?.lastDisconnect?.error?.output?.statusCode
+          || update?.lastDisconnect?.error?.data?.statusCode
+        if (RECONNECTABLE_CODES.has(statusCode)) {
+          _uptimeReconnectCount += 1
+          // Suppress process.exit for 15 seconds — enough time for Baileys
+          // to attempt reconnection. After that, normal exit behavior resumes.
+          _suppressExitUntil = Date.now() + 15 * 1000
+          process.stdout.write(
+            `[uptime] Reconnectable disconnect (code ${statusCode}, count ${_uptimeReconnectCount}) — ` +
+            `suppressing exit for 15s. Baileys will reconnect.\n`,
+          )
+        }
+      }
+    })
 
     // ── Memory Watchdog ──────────────────────────────────────────────────
     // Check heap usage every 30 minutes. Clean the message store if it gets
