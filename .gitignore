@@ -50,3 +50,4 @@ heroku.yml
 
 # The old say-command asset bundle is disabled and not part of Safful-Md.
 plugins/meme.say/
+release-protected.rar
