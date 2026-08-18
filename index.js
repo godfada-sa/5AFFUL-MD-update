@@ -22,6 +22,49 @@ function saffulCheckNodeVersion() {
 }
 saffulCheckNodeVersion()
 
+// ── Uptime Guardian — installed BEFORE any require() ─────────────────────
+// WhatsApp forces a session rotation (status 515) every ~12-24 hours. The
+// obfuscated core catches this and calls process.exit(1). If we override
+// process.exit AFTER modules load, they save a reference to the OLD exit
+// and our override is bypassed.
+//
+// This override is installed at the very top so every module (smd.js,
+// safful-auth-recovery, etc.) gets our override as the "real" process.exit.
+// By default it allows all exits. After the first successful WhatsApp
+// connection, activate() is called to suppress exits during reconnectable
+// disconnects (515, 408).
+// ──────────────────────────────────────────────────────────────────────────
+const __uptime = {
+  active: false,         // only suppress after first successful connection
+  reconnectCount: 0,
+  suppressUntil: 0,      // timestamp: suppress exits until this time
+  origExit: process.exit.bind(process),
+}
+// The override itself. Every module that saved process.exit gets this.
+process.exit = function (code) {
+  if (__uptime.active && __uptime.suppressUntil > Date.now() && code !== 0) {
+    process.stdout.write('[uptime] Suppressing process.exit(' + code + ') — reconnectable disconnect in progress.\n')
+    return
+  }
+  return __uptime.origExit(code)
+}
+// Allow the uptime guardian section (inside start()) to activate suppression.
+global.__saffulUptimeSuppress = function (ms) {
+  if (!__uptime.active) {
+    __uptime.active = true
+    process.stdout.write('[uptime] Guardian activated — will suppress reconnectable disconnects\n')
+  }
+  __uptime.reconnectCount += 1
+  __uptime.suppressUntil = Date.now() + ms
+}
+global.__saffulUptimeReconnected = function () {
+  if (__uptime.reconnectCount > 0) {
+    process.stdout.write('[uptime] Reconnected after ' + __uptime.reconnectCount + ' suppressed disconnect(s) — uptime preserved\n')
+    __uptime.reconnectCount = 0
+  }
+}
+// ── End Uptime Guardian ─────────────────────────────────────────────────
+
 const fs = require('fs')
 const path = require('path')
 
@@ -227,9 +270,6 @@ function notifyConnectedOnce(socket) {
     return
   }
   let warnedWaiting = false
-  // The core replaces the socket after a successful pairing (status 515
-  // restart), so the socket passed in here can go stale. Use the newest
-  // socket the auth hook has seen for both the check and the send.
   const liveSocket = () =>
     (global.__saffulLatestSocket && typeof global.__saffulLatestSocket?.sendMessage === 'function'
       ? global.__saffulLatestSocket
@@ -237,7 +277,6 @@ function notifyConnectedOnce(socket) {
   const sendBanner = async () => {
     if (connectedBannerSent) return
     const current = liveSocket()
-    // Only send once the session is actually usable (logged-in user present).
     if (!current?.user?.id) {
       if (!warnedWaiting) {
         warnedWaiting = true
@@ -259,8 +298,6 @@ function notifyConnectedOnce(socket) {
   socket.ev.on('connection.update', ({ connection } = {}) => {
     if (connection === 'open') void sendBanner()
   })
-  // Robust fallback: poll until the session is usable and the message lands,
-  // up to ~60 seconds. The per-process flag guarantees exactly one send.
   let attempts = 0
   const retry = setInterval(() => {
     attempts += 1
@@ -284,11 +321,6 @@ const start = async () => {
 
     bootPhase = 'core-load'
     process.stdout.write('[boot] loading core module…\n')
-    // The legacy core owns its socket for the entire login lifecycle. The
-    // pairing hook in safful-auth-method requests the code from that exact
-    // socket, matching MEGA-MD's working one-socket pairing flow.  Creating a
-    // short-lived bootstrap socket here caused WhatsApp to reject the stream
-    // before the real bot socket could take over.
     bot = require(__dirname + '/lib/smd')
     process.stdout.write('[boot] core loaded\n')
     console.log(`Safful ${VERSION}`)
@@ -307,8 +339,6 @@ const start = async () => {
     bootPhase = 'socket-create'
     process.stdout.write('[boot] connecting to WhatsApp…\n')
 
-    // One-line egress check so a blocked panel network is identified at once,
-    // before the socket can sit in 'connecting' for minutes.
     try {
       const probe = await fetch('https://web.whatsapp.com', { method: 'HEAD', signal: AbortSignal.timeout(8000) })
       process.stdout.write(`[boot] WhatsApp reachable (HTTP ${probe.status})\n`)
@@ -319,8 +349,6 @@ const start = async () => {
     const socket = await bot.connect()
     process.stdout.write('[boot] socket created\n')
 
-    // Stream the socket lifecycle to the panel even though the legacy core
-    // runs Baileys with a silent logger and silences console.log.
     const reportConnection = (update = {}) => {
       const state = String(update.connection || '')
       if (!state || state === lastConnectionState) return
@@ -331,20 +359,6 @@ const start = async () => {
     }
     socket.ev?.on?.('connection.update', reportConnection)
 
-    // Recovery watchdog: a socket that never reaches 'open' is either blocked
-    // egress or a stale session. Never leave the bot silently dead.
-    //
-    // CRITICAL: the session folder is NEVER auto-archived here. Archiving is
-    // what caused the 'already paired but cleared on restart' loop: a restart
-    // right after the phone confirmed the link left `registered: false`, the
-    // watchdog renamed the whole folder away, and the next boot asked to pair
-    // again. Levanter never touches its session folder — neither do we. A
-    // stalled socket just restarts the process with the session intact, and
-    // Baileys re-registers on reconnect. If the operator wants a fresh login,
-    // they delete lib/Suhail_Baileys themselves.
-    //
-    // Fresh logins (QR/pairing) get a longer window because they need human
-    // time to open /qr and scan before the registration completes.
     const freshLogin = global.__saffulAuthMethod === 'pairing' || global.__saffulAuthMethod === 'qr'
     const stallTimeoutMs = 5 * 60 * 1000
     let opened = false
@@ -376,72 +390,36 @@ const start = async () => {
     livenessPoll.unref?.()
 
     bootPhase = 'attach-hooks'
-    // Intercept Baileys at its emit boundary before the legacy message
-    // listener sees a view-once envelope and rewrites it.
     attachProtection.installSocketRawCapture(socket)
     rebrandSocket(socket)
     preserveMobileNotifications(socket)
-    // These features need raw Baileys events (deletions and statuses), but
-    // they share one dispatcher so commands are never delayed by duplicate
-    // event listeners scanning the same incoming message.
     attachRawDispatcher(socket, { attachProtection, autoView, statusSave })
     notifyConnectedOnce(socket)
     process.stdout.write('[boot] hooks attached — ready\n')
 
-    // ── Uptime Guardian (process.exit override) ─────────────────────────
-    // WhatsApp forces a session rotation (status 515) every ~12-24 hours.
-    // The obfuscated core catches this and calls process.exit(1), killing
-    // the bot and resetting PM2 uptime.
-    //
-    // Previous approach: wrap socket.ev.emit to suppress the event. This
-    // fails because smd.js has its own reference to the original emit.
-    //
-    // New approach: override process.exit() globally. When a reconnectable
-    // disconnect (515, 408) is detected via connection.update, we set a
-    // flag and suppress process.exit(1) for 15 seconds. Baileys handles
-    // reconnection internally — the core just needs to not kill itself.
-    //
-    // BUG FIX: Only activate after the first successful connection. During
-    // QR/pairing login, WhatsApp sends a 515 as part of the auth handshake
-    // — suppressing exit at that point blocks login from completing.
-    // ─────────────────────────────────────────────────────────────────────
-    const RECONNECTABLE_CODES = new Set([408, 515])  // timedOut, restartRequired
-    let _uptimeGuardianActive = false
-    let _uptimeReconnectCount = 0
-    let _suppressExitUntil = 0
-
-    // Override process.exit to suppress exits during reconnectable disconnects.
-    const _origProcessExit = process.exit.bind(process)
-    process.exit = function (code) {
-      if (_suppressExitUntil > Date.now() && code !== 0) {
-        process.stdout.write(`[uptime] Suppressing process.exit(${code}) — reconnectable disconnect in progress. Baileys will reconnect.\n`)
-        return
-      }
-      return _origProcessExit(code)
-    }
-
-    // Listen for connection updates to detect reconnectable disconnects.
+    // ── Uptime Guardian activation ─────────────────────────────────────
+    // The process.exit override is already installed at the top of this
+    // file (before any require). Here we just register a listener to
+    // activate suppression when reconnectable disconnects happen.
+    const RECONNECTABLE_CODES = new Set([408, 515])
+    let _guardianActivated = false
     socket.ev?.on?.('connection.update', (update = {}) => {
       if (update.connection === 'open') {
-        if (!_uptimeGuardianActive) {
-          _uptimeGuardianActive = true
-          process.stdout.write('[uptime] Guardian activated — will suppress reconnectable disconnects\n')
+        if (!_guardianActivated) {
+          _guardianActivated = true
+          // Activate the process.exit override — from now on, reconnectable
+          // disconnects will suppress exit instead of killing the process.
+          global.__saffulUptimeSuppress(0)  // activate with 0ms = just turn on
         }
-        if (_uptimeReconnectCount > 0) {
-          process.stdout.write(`[uptime] Reconnected after ${_uptimeReconnectCount} suppressed disconnect(s) — uptime preserved\n`)
-          _uptimeReconnectCount = 0
-        }
+        global.__saffulUptimeReconnected()
       }
-      if (_uptimeGuardianActive && update.connection === 'close') {
+      if (_guardianActivated && update.connection === 'close') {
         const statusCode = update?.lastDisconnect?.error?.output?.statusCode
           || update?.lastDisconnect?.error?.data?.statusCode
         if (RECONNECTABLE_CODES.has(statusCode)) {
-          _uptimeReconnectCount += 1
-          // Suppress process.exit for 15 seconds — enough time for Baileys
-          // to attempt reconnection. After that, normal exit behavior resumes.
-          _suppressExitUntil = Date.now() + 15 * 1000
+          global.__saffulUptimeSuppress(15000)  // suppress exit for 15 seconds
           process.stdout.write(
-            `[uptime] Reconnectable disconnect (code ${statusCode}, count ${_uptimeReconnectCount}) — ` +
+            `[uptime] Reconnectable disconnect (code ${statusCode}) — ` +
             `suppressing exit for 15s. Baileys will reconnect.\n`,
           )
         }
@@ -449,10 +427,6 @@ const start = async () => {
     })
 
     // ── Memory Watchdog ──────────────────────────────────────────────────
-    // Check heap usage every 30 minutes. Clean the message store if it gets
-    // too large, and log a warning at high watermark. If heap exceeds 800MB
-    // the store is force-trimmed; above 1GB the process exits for PM2 to
-    // restart cleanly (fresh memory).
     const MEMORY_WARN_MB = 500
     const MEMORY_CLEAN_MB = 650
     const MEMORY_FATAL_MB = 800
@@ -477,7 +451,6 @@ const start = async () => {
     }, 30 * 60 * 1000)
     memoryCheck.unref?.()
 
-    // Force periodic GC every 6 hours to prevent slow heap bloat.
     const gcInterval = setInterval(() => {
       if (global.gc) global.gc()
     }, 6 * 60 * 60 * 1000)
@@ -486,12 +459,7 @@ const start = async () => {
   } catch (error) {
     process.stdout.write(`[boot] FAILED at '${bootPhase}': ${error?.stack || error}\n`)
     console.error('[startup] Failed to start Safful-Md:', error);
-    // A rejected pairing code must not generate an endless stream of new
-    // partial sessions. The operator can retry deliberately after WhatsApp
-    // allows new-device pairing again, or choose QR from a fresh start.
     if (global.__saffulAuthMethod === 'pairing') return
-    // Avoid a CPU-heavy recursive restart loop when a non-auth startup error
-    // occurs. The error remains visible and a deliberate retry follows.
     setTimeout(() => void start(), 3000).unref?.();
   }
 }
