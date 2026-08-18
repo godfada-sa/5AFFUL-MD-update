@@ -4,7 +4,8 @@ const { downloadAudio, removeDownloadedAudio } = require('../lib/safful-ytdlp');
 function isYouTubeUrl(value) {
   try {
     const host = new URL(value).hostname.toLowerCase();
-    return host === 'youtu.be' || host.endsWith('.youtu.be') || host === 'youtube.com' || host.endsWith('.youtube.com');
+    return host === 'youtu.be' || host.endsWith('.youtu.be')
+      || host === 'youtube.com' || host.endsWith('.youtube.com');
   } catch {
     return false;
   }
@@ -19,7 +20,7 @@ function safeFileName(value) {
 }
 
 async function findVideo(query) {
-  if (isYouTubeUrl(query)) return { url: query, title: 'Safful song' };
+  if (isYouTubeUrl(query)) return { url: query, title: 'Your requested audio' };
 
   const search = require('secktor-pack');
   const result = await search.search(query);
@@ -41,8 +42,10 @@ cmd({
   const socket = context?.Void || message.bot;
   let audio;
   try {
-    await message.reply('🎵 Searching and preparing your audio...');
+    await message.reply('🎵 *Searching...*');
     const video = await findVideo(query);
+    await message.reply(`🎧 *Preparing audio...*\n_${safeFileName(video.title)}_`);
+
     audio = await downloadAudio(video.url);
     await socket.sendMessage(message.chat, {
       audio: { url: audio.filePath },
@@ -52,7 +55,17 @@ cmd({
     }, { quoted: message });
   } catch (error) {
     console.error('[song] download failed:', error.message || error);
-    await message.reply('I could not download that audio right now. Please try another song or a direct YouTube link.');
+    if (error?.message?.includes('too large')) {
+      await message.reply(error.message);
+    } else {
+      const reason = String(error?.message || error || 'unknown error').slice(0, 220);
+      const isBotCheck = /not a bot|Sign in to confirm|bot[ -]?check|LOGINREQUIRED|unavailable for this IP/i.test(reason);
+      if (isBotCheck) {
+        await message.reply(`❌ *Download failed.*\n\n_${reason}_\n\nYour server IP is flagged by YouTube (datacenter IPs often are). The bot retried with every player client — if all of them are blocked, no free method works from this IP. Try: a different host/VPS, or point SAFFUL_YTDLP_PATH at yt-dlp with cookies for a residential account.`);
+      } else {
+        await message.reply(`❌ *Download failed.*\n\n_${reason}_\n\nTry another song or a direct YouTube link. If this keeps happening, the server IP may be blocked by YouTube — try a different host.`);
+      }
+    }
   } finally {
     if (audio?.filePath) await removeDownloadedAudio(audio.filePath);
   }

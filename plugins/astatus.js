@@ -76,8 +76,19 @@ cmd({
   if (!TRIGGERS.test(body)) return;
 
   try {
-    // forwardMessage() defaults to forwarding the quoted status to this chat.
-    await message.forwardMessage();
+    // forwardMessage() forwards quoted.fakeObj whose message field is never
+    // populated for status replies (data.quoted is not set by smsg) — that
+    // sends an empty message. copyNForward() forwards the real quoted object.
+    const socket = message?.bot;
+    if (socket?.copyNForward) {
+      await socket.copyNForward(message.chat, message.quoted, false);
+    } else if (typeof message?.copyNForward === 'function') {
+      await message.copyNForward();
+    } else if (typeof message?.forwardMessage === 'function') {
+      await message.forwardMessage();
+    } else {
+      throw new Error('No copyNForward available on socket or message');
+    }
   } catch (error) {
     console.error('[astatus] forward failed:', error.message || error);
   }
