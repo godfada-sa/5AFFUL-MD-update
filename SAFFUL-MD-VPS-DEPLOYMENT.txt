@@ -1,0 +1,161 @@
+SAFFUL-MD — UBUNTU 24.04 VPS DEPLOYMENT GUIDE
+===============================================
+
+1. CONNECT TO THE VPS
+---------------------
+Open PuTTY and connect as the `ubuntu` user.
+
+Confirm the user:
+
+  whoami
+
+
+2. INSTALL SYSTEM DEPENDENCIES
+------------------------------
+Run:
+
+  sudo apt update
+  sudo apt install -y git curl ca-certificates ffmpeg build-essential
+
+Install Node.js 22:
+
+  curl -fsSL https://deb.nodesource.com/setup_22.x -o /tmp/nodesource_setup.sh
+  sudo -E bash /tmp/nodesource_setup.sh
+  rm /tmp/nodesource_setup.sh
+  sudo apt install -y nodejs
+
+Confirm Node and npm:
+
+  node -v
+  npm -v
+
+
+3. AUTHORISE THE VPS FOR YOUR PRIVATE GITHUB REPOSITORY
+-------------------------------------------------------
+Create a VPS SSH key:
+
+  ssh-keygen -t ed25519 -C "saffulbot-vps"
+  cat ~/.ssh/id_ed25519.pub
+
+Copy the displayed public key. On GitHub, open:
+
+  bot-md > Settings > Deploy keys > Add deploy key
+
+Paste the key. Enable "Allow write access" only if you plan to push updates
+from the VPS.
+
+Test the connection:
+
+  ssh -T git@github.com
+
+
+4. CLONE AND INSTALL THE BOT
+----------------------------
+  mkdir -p ~/apps
+  cd ~/apps
+  git clone git@github.com:godfada-sa/bot-md.git saffulbot-device1
+  cd saffulbot-device1
+  PUPPETEER_SKIP_DOWNLOAD=true npm ci
+
+PUPPETEER_SKIP_DOWNLOAD=true prevents an unnecessary Chrome download.
+
+
+5. CONFIGURE DEVICE 1
+---------------------
+  cp .env.example .env
+  nano .env
+
+Set these values in .env:
+
+  OWNER_NUMBER=233256238978
+  SUDO=233256238978
+  OWNER_NAME=Safful
+  BOT_NAME=Safful-Md
+  PREFIX=.
+  MODE=private
+  PORT=8001
+  TZ=Atlantic/Reykjavik
+
+  SAFFUL_SELF_HOSTED=true
+
+  AUTH_METHOD=pairing
+  PAIRING_NUMBER=233256238978
+
+PAIRING_NUMBER is the WhatsApp account you want to link. Use country code,
+without a plus sign, spaces, or dashes.
+
+Save Nano: Ctrl+O, Enter, then Ctrl+X.
+
+
+6. CREATE THE SYSTEMD SERVICE
+-----------------------------
+  sudo nano /etc/systemd/system/saffulbot-device1.service
+
+Paste this:
+
+  [Unit]
+  Description=Safful-Md WhatsApp Bot (Device 1)
+  After=network-online.target
+  Wants=network-online.target
+
+  [Service]
+  Type=simple
+  User=ubuntu
+  WorkingDirectory=/home/ubuntu/apps/saffulbot-device1
+  Environment=NODE_ENV=production
+  Environment=SAFFUL_PRESERVE_AUTH_ON_RESTART=true
+  ExecStart=/usr/bin/npm start
+  Restart=always
+  RestartSec=8
+  NoNewPrivileges=true
+  PrivateTmp=true
+
+  [Install]
+  WantedBy=multi-user.target
+
+Save Nano: Ctrl+O, Enter, then Ctrl+X.
+
+
+7. START AND PAIR THE BOT
+-------------------------
+  sudo systemctl daemon-reload
+  sudo systemctl enable --now saffulbot-device1
+  sudo journalctl -u saffulbot-device1 -f
+
+The log will display:
+
+  [auth] Your Safful-Md pairing code: XXXXXXXX
+
+On WhatsApp:
+
+  Settings > Linked devices > Link a device > Link with phone number instead
+
+Enter the eight-character code.
+
+Press Ctrl+C to stop viewing logs. This does NOT stop the bot.
+
+
+8. USEFUL SERVICE COMMANDS
+--------------------------
+  sudo systemctl status saffulbot-device1
+  sudo systemctl restart saffulbot-device1
+  sudo systemctl stop saffulbot-device1
+  sudo journalctl -u saffulbot-device1 -f
+
+
+9. UPDATE THE BOT LATER
+-----------------------
+  cd ~/apps/saffulbot-device1
+  git pull origin main
+  PUPPETEER_SKIP_DOWNLOAD=true npm ci
+  sudo systemctl restart saffulbot-device1
+
+
+IMPORTANT
+---------
+- Do not delete lib/Suhail_Baileys after pairing; it holds the linked-device
+  WhatsApp credentials.
+- Do not expose port 8001 in the AWS security group. Keep only SSH port 22
+  accessible, preferably restricted to your IP address.
+- For another WhatsApp device, use a different directory, service name, and
+  port. For example: saffulbot-device2 and PORT=8002.
