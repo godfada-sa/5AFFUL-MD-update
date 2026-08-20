@@ -439,6 +439,8 @@ function findReleaseRoot() {
 }
 
 function verifyReleaseIntegrity() {
+  if (global.__saffulIntegrityChecked) return;
+  global.__saffulIntegrityChecked = true;
   const skip = String(process.env.SAFFUL_SKIP_INTEGRITY_CHECK || '').toLowerCase();
   if (skip === '1' || skip === 'true') {
     console.log('[integrity] guard disabled via SAFFUL_SKIP_INTEGRITY_CHECK');

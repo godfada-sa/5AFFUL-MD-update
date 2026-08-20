@@ -163,7 +163,7 @@
     },
     {
       "file": "plugins/00-safful-integrity-check.js",
-      "sha256": "309f550c98f2146a747741873aac3a6902ece5f5ab940a9284faacc668ee75ec"
+      "sha256": "8d0a90395a68d920fb9a76dba50db96c646f0ea866e80de3f9781ef1af9858c7"
     },
     {
       "file": "plugins/all.js",
@@ -395,7 +395,7 @@
     },
     {
       "file": "plugins/00-safful-integrity-check.js",
-      "sha256": "309f550c98f2146a747741873aac3a6902ece5f5ab940a9284faacc668ee75ec"
+      "sha256": "8d0a90395a68d920fb9a76dba50db96c646f0ea866e80de3f9781ef1af9858c7"
     }
   ],
   "notice": "This release intentionally contains obfuscated runtime code and no local credentials or .env file."
