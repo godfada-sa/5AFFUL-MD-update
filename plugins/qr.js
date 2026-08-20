@@ -1,10 +1,20 @@
-const { cmd } = require('../lib/plugins');
+const { cmd, commands } = require('../lib/plugins');
 const QRCode = require('qrcode');
+
+// Remove the old broken qr command from converter.smd
+// (it references a global 'text' variable instead of the callback parameter)
+setImmediate(() => {
+  const oldQr = commands.findIndex(c => c.pattern === 'qr' && String(c.filename || '').includes('converter'));
+  if (oldQr !== -1) {
+    commands.splice(oldQr, 1);
+    console.log('[qr] removed old broken qr command from converter.smd');
+  }
+});
 
 cmd({
   pattern: 'qr',
   alias: ['qrcode', 'generateqr'],
-  desc: 'Generate a QR code from text or link',
+  desc: 'Generate a QR code from any text or link',
   category: 'tools',
   use: '<text or link>',
 }, async (message, text) => {
