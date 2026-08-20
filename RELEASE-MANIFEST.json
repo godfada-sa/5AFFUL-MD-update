@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-08-18T23:48:35.869Z",
+  "generatedAt": "2026-08-20T01:47:15.432Z",
   "protectedFiles": [
     {
       "file": ".env.example",
@@ -11,7 +11,7 @@
     },
     {
       "file": "index.js",
-      "sha256": "88942c8714364ff3cd80a23555c6dd5428812997bea0a70e80d0a38332095e77"
+      "sha256": "376cea8c4f33339ec13511b19aeb2829fb030ab5505f5c4cd0a81110481fe0d8"
     },
     {
       "file": "lib/assets/index.html",
@@ -39,115 +39,115 @@
     },
     {
       "file": "lib/brand-console.js",
-      "sha256": "8f64da330a68fc78a12475d40721ba9f16be582206c5984f191b75ca29170915"
+      "sha256": "3e1eb89a3a006ccb00322d0e645e4cb3ec85861afca1eddc11caa20152c77e91"
     },
     {
       "file": "lib/class/init.js",
-      "sha256": "1609f28f30bafd0c63c9cad3882b31ac1e75efed43002dcecd761c0738bb48b0"
+      "sha256": "518dd0fdab0008fecf8aa409967156775baab37329ace3df371338b10526207a"
     },
     {
       "file": "lib/database/alive.js",
-      "sha256": "dcae9f088964d37b1ee3c9663c71b307667702a4893961e4b3ddda8beab77da5"
+      "sha256": "6b13d6fec10ad5833c44730cddddf1375504e3b48c66ae956a39cfc3187052b1"
     },
     {
       "file": "lib/database/group.js",
-      "sha256": "76470597cf3a3a10a97bb2769b747ae0e3cfe5d959a02118caadc1d4ee443af4"
+      "sha256": "608da61cb2f5b54f26191830c6c0344712d6b49b992bc3f4d6a5e64b290851f9"
     },
     {
       "file": "lib/database/tempdb.js",
-      "sha256": "2e801decd27721b720a02edb7205f0070c75a6a1abdf4d5a28f92d00d0387094"
+      "sha256": "16d1ed394b968a60f1415876e68d59969fe1e9328ceb94672e6d2bc66b609637"
     },
     {
       "file": "lib/database/user.js",
-      "sha256": "4f3f330a3a5cde22418393d9a7b5fd7a68ba9e9ea0a454155330c782cea8005f"
+      "sha256": "5ce3706ae6dbfd783a1c8b28cdf9d9e04ec5f0ebb2a36e4d7911695dca9d8e2b"
     },
     {
       "file": "lib/exif.js",
-      "sha256": "e3af51545d27aaa02815060345e77449a35378516c09613cad4b75f527d28ac2"
+      "sha256": "5f2d61025377cc77248fbe5592773a52cdcbf70f64872fadc5047dcb45be38dd"
     },
     {
       "file": "lib/index.js",
-      "sha256": "86fc8f3dbd3b08fa695e33db0f32334351cd899bbf9510773dd208bb3c436824"
+      "sha256": "af672d80a649eeb8bb03af631b3f88c3d58282b21e9bcf6b1a1a8c5e68bdb82c"
     },
     {
       "file": "lib/koyeb.js",
-      "sha256": "42b4d6948c7d6598e3c22ce0a9b59e11ffe78c3fa70e7ab16ed5ba6ab471719c"
+      "sha256": "2151fc68a46b41f2b8e9c6195d081d44e33805ff342d2939b293427666150ea1"
     },
     {
       "file": "lib/plugins.js",
-      "sha256": "a8654696e9f2ba2439c396ecb1737d68fbe63f741741e58dac3fdaf776f21997"
+      "sha256": "3c68f6c40f99513fc0537197012322d550017d8f430c17c644f49686dbea9c65"
     },
     {
       "file": "lib/safful-auth-method.js",
-      "sha256": "6eef35dbe00bb7b87ac4d563154a660f1aa9f425173b2398f0904b64123512d5"
+      "sha256": "443dfbfac343dd204a4afeb351277a59d3648970ba1efe676c000095b61b7da8"
     },
     {
       "file": "lib/safful-auth-recovery.js",
-      "sha256": "b6bb56e635213c9d8c8d6e841e7616c6c9ec82e3411891841324ad11250a1cb9"
+      "sha256": "7703d79a5b036abe5f7cc785fa8f4e5e02b4619be534abc5e46f9eeafa1ead30"
     },
     {
       "file": "lib/safful-history-mode.js",
-      "sha256": "070479c17651141ce8447b52e294c762c40333573e9f56aa4fffc92940603dae"
+      "sha256": "26114b5a1e16f0f66ca1a26e512d68afbc1aa96c2c4291827278a9d1d5faeccb"
     },
     {
       "file": "lib/safful-mobile-notifications.js",
-      "sha256": "d72d317b52486e38cf4b53063cc089d28882224f840bf7521bca5bed2319aee3"
+      "sha256": "787b08e655a401d09f7e83d1147a105503a723321ebe7835772507221072e6cf"
     },
     {
       "file": "lib/safful-mode.js",
-      "sha256": "bff30c5ec7de592743704a0294e5b53ed811738c9d83a35fce9cbf565eca2df8"
+      "sha256": "b2c706506a86751f772d097cda11a60d760976a5371e6435e6fdfe8702fa5ffa"
     },
     {
       "file": "lib/safful-optional-sharp.js",
-      "sha256": "abc8e40a470ea04855a73508b21b7fedcde6fcae67e6bd802cf80ac338a7a71c"
+      "sha256": "e8f31d0ee04e444e55464ead0a323b1f008beebd6f18bb1a049bfc3e4cc96709"
     },
     {
       "file": "lib/safful-outgoing-message-policy.js",
-      "sha256": "279b578704f5b0945a7a4e94ca9ed0c5997b9ead7586a7e4e2f03b35d12c1b02"
+      "sha256": "b71677c6c7389ed17b432fc3ef895e21288a645c04365777be79d4b0ff5c490e"
     },
     {
       "file": "lib/safful-pairing-bootstrap.js",
-      "sha256": "a6ed2672e7de4672a4bbd1906ac23f9421f6a955f07d0baaad6fec24a2b023ea"
+      "sha256": "51ffb815738cd257995717ee96293c24702ae529307ffa942dccee9c6daa04d6"
     },
     {
       "file": "lib/safful-protection.js",
-      "sha256": "3273a0d778441882ec6628d2a74fe69ef8184dbc2cc1358da17a6895c2e3411a"
+      "sha256": "0ba478169dc381d3abc2e948357382bd650cf4541ab6f4019d82088331756142"
     },
     {
       "file": "lib/safful-raw-dispatcher.js",
-      "sha256": "a26ba34b0eb43cfd6990b4d9b858430043dce65dfe75c0abee84d4bc2c073c35"
+      "sha256": "b7f69adc2709f910d2b778722ce6e39d52278a5702ee5c219d52dcc6d7756d29"
     },
     {
       "file": "lib/safful-status-save.js",
-      "sha256": "54a5f9774e4de2ef940294c463b3dad2ff61d471263667060318563f2606a0b2"
+      "sha256": "0d7501c4918c1a7acb7bd541da2f6282d1df33e4772d36ea87b0b0fd40e4578b"
     },
     {
       "file": "lib/safful-ytdlp.js",
-      "sha256": "9667e0aa4dc784cb7c83536a978353db231e0a636593231fe63923e065a6fb8d"
+      "sha256": "0930fd18bb6f09ccc05b0a207fe99cfcbf77f9aa0b8a894e4af0b75a0a00d3fb"
     },
     {
       "file": "lib/schemes.js",
-      "sha256": "51a9100b10b55d246085b8da1e1480fc5e29aa9f6d1ae047b7dfe4585324c62d"
+      "sha256": "a51487f01a84077cf0f5499bae09fc773c5f756fd80036c0c40b9633d0791a7a"
     },
     {
       "file": "lib/scraper.js",
-      "sha256": "49cbf29b29b84ac8a4b3a1869b6d91685d480df3a228412785ad42b5d4a2e1d8"
+      "sha256": "1d3d25be02479529c9595ca4e2061a009851b3577f254b9fb58b2f8da8d6d3dc"
     },
     {
       "file": "lib/serialized.js",
-      "sha256": "08dffdd7a677004b0d0826497194bc3c68a457a8f33855d7f97befb283397622"
+      "sha256": "cc07e286e9e270251442b61c98bb31bd1598e535c1b0f07a70ebc58c8bc6890e"
     },
     {
       "file": "lib/store-shim.js",
-      "sha256": "647d84429419118fc252786fa67aa1fd262c59d958f240f13e5d2fcb7787daf1"
+      "sha256": "1edcb5fdfff4fb5bd21e68985325941d83f74c41799e982830c0c2290b5f948a"
     },
     {
       "file": "lib/stylish-font.js",
-      "sha256": "a31b45b6c94d25759b5c9dd7bce6a8052ec98b502a80164e29108fb0e45bcd1d"
+      "sha256": "04d31e018e69fb5ea5c56bec5f250e4f6a0fbe2e7aa1a75735c5d0533631c70d"
     },
     {
       "file": "lib/suhail.js",
-      "sha256": "9de51a3c9398bd6dd75b99c6a2ff1fd40235b0ade4bae6fa178720bd2de3218d"
+      "sha256": "bd6f3d97a9cc893cb03e6783a676c958ff17beb6b21500046f3ed5dfeb2d2347"
     },
     {
       "file": "lib/ttt.d.ts",
@@ -155,63 +155,71 @@
     },
     {
       "file": "lib/ttt.js",
-      "sha256": "a6840386fbd28cdff088f666e0f7a85649f68941ca9cd581337c8a93debe567a"
+      "sha256": "acb5b0a18166378a75a5c12c5038a3de0ed87c11eef8109209f86fb00c2b015a"
     },
     {
       "file": "LICENSE",
       "sha256": "f61450500d90b972bac512b850453900591561154b971c601a19432f57968b72"
     },
     {
+      "file": "plugins/00-safful-integrity-check.js",
+      "sha256": "309f550c98f2146a747741873aac3a6902ece5f5ab940a9284faacc668ee75ec"
+    },
+    {
+      "file": "plugins/all.js",
+      "sha256": "daa83c7ab1a51fa72a532962bd76b4e74c75bbf7204e01d849e6ecf1f1eee19c"
+    },
+    {
       "file": "plugins/astatus.js",
-      "sha256": "64d919a4a60ec6cec6597c5a62614751443611506895f2b18281c60505edc33b"
+      "sha256": "c859faf16cc1720ae792479c8a231d95636f30de15ce305ed88e86e00a65a79d"
     },
     {
       "file": "plugins/autoview.js",
-      "sha256": "fa9f2bd544c90b7beaaf2080c4c1d1e2dec81a63682f23debe7a51b1d68ec996"
+      "sha256": "49010f714b80929c7e96ffa0b6ad50d50193541feb9b6a0725456db27c38af3a"
     },
     {
       "file": "plugins/broadcast.js",
-      "sha256": "68b3da4580dc9533f526e61d3e1c5e72c9a9728004f40ead533f17e06457879d"
+      "sha256": "f28fa0643b42111638867663fc1fb2bc2c25eff6bb87976cdd10309f6a33e119"
     },
     {
       "file": "plugins/chats.smd",
-      "sha256": "c1b531f66cf96e01b4c75e18b713a98a6e8576a6967dc0a8a4051eac886fafdb"
+      "sha256": "f098f2542cadfe4a74552e94db36bac8bacf6845d93bc8065b8592eb91732aa1"
     },
     {
       "file": "plugins/converter.smd",
-      "sha256": "11775b6b9ab9b25d78e7e5567cb0c63c7067f2f7ec6631cd2efc0f09505e4449"
+      "sha256": "95ce3e87ffab97da1d33e2cae9d801dc02c9af3584e1db92baa6fa0b91331dfa"
     },
     {
       "file": "plugins/core.js",
-      "sha256": "ab0dc7fc28be053c0d99b49471c0ce1f91dbcf1accecf01b8da2c3a8da62e727"
+      "sha256": "6f0dc04942e3e59f65263bc61f99ceea9d48e1200d7e612f63c6ae65aa357232"
     },
     {
       "file": "plugins/delete.js",
-      "sha256": "e18626206da70a551f45f53efa18251fbe7b26f5f62f945311e05f538aab517a"
+      "sha256": "f215efe34431ba324bb465ee994eb9582e997a39e4c4fd60f7a041ae8526b4e1"
     },
     {
       "file": "plugins/downloader.smd",
-      "sha256": "25f46029566977be3bafed9050a46c942b55a7951ea95820a60c7f286a3bb3e4"
+      "sha256": "2feec768168d3b2c48e511f41a753b884571b788a150a396562161269f58e5df"
     },
     {
       "file": "plugins/economy.smd",
-      "sha256": "3123a2aa2fbbfc2b27e0c071559a97368f9171921c07953c701a0f342ba5bffc"
+      "sha256": "455e65ae42bfd05c6d97c9347da229d780f89d9de074e7426fdf812d9dbc41b8"
     },
     {
       "file": "plugins/editorpack.smd",
-      "sha256": "112690548c53c959caff61447a5dc8199d1412527177f20d7f89bd4ea30061b6"
+      "sha256": "a4f5d0615acee73f93a16f7fab0dfdbcc3ffe33a7ba2c783951159e8ddf82622"
     },
     {
       "file": "plugins/fun.smd",
-      "sha256": "51325284416dc6acc283328f6165c61737560d76b901e3c4ef9d4349bb4a877d"
+      "sha256": "a4ba0fe1b818f135fdc7afade1a43b8f2db4e59fd9fb559d95e8474755d8bac1"
     },
     {
       "file": "plugins/git-init.js",
-      "sha256": "b5dbcad1ffbaa894738efa1eeeb01b457475f30fd16525b138ca01739ef0004b"
+      "sha256": "f7a21073a78ed456fb1f36f492f0a3266fa5eaa36d568bcf3e5434ccf6fe44a0"
     },
     {
       "file": "plugins/group.smd",
-      "sha256": "1827a62bbcda010fecb7d80050718d95f6ec0f92e5232a4c445e41de6329de4e"
+      "sha256": "dfebe4c0e78432777c9931071c579d6d7b8276490d4261c3fb6e73b58573b4d9"
     },
     {
       "file": "plugins/meme.say/anime.png",
@@ -255,59 +263,59 @@
     },
     {
       "file": "plugins/menu.js",
-      "sha256": "bb9d55ec4d88d064de20a0dfe31d7f77f4ba972321eabda9bad8b381baea6d72"
+      "sha256": "678b8773c608fb9ca8b0c2bafed55435526363ba11bf2640b845298d6578fc5b"
     },
     {
       "file": "plugins/mode.js",
-      "sha256": "9e81a511ba06a8ac0565e252b30c8024ab99da882d098a23f66fbfb401d7ab59"
+      "sha256": "da386fd056a47e0519bd144032f97057c34f2e11e8e5abbb45b2b34bd91138a7"
     },
     {
       "file": "plugins/owner-tools.js",
-      "sha256": "ad98e9a45daaaf6bb36b6e81fd3d1cb7b233a3475f9e967c6d7b67131cdf11b1"
+      "sha256": "a9e5726f3faf49f2b7675adbe116394b091b83e3ad23e86b986894afa5004899"
     },
     {
       "file": "plugins/protection.js",
-      "sha256": "9aefafcd71ab99704394bd90f1d731b9c254197bcb058c9fda01fc746c75b2be"
+      "sha256": "96df0f05233887a62568afadfd0c707cb70aa6647cb0933f28f909cc12bc2161"
     },
     {
       "file": "plugins/save.js",
-      "sha256": "3d2635c291c873b17b2fceb82eba13da628d9f07f6c7f9effc96113d2b9e911f"
+      "sha256": "85f82e4aa158315772ef48c69cbae326a20f74189e0f5dd7b25e1f3f1c629e9e"
     },
     {
       "file": "plugins/savestatus.js",
-      "sha256": "104083c6d91f6731b46e2e1330a7f23f747e20c2183c2f69867ec8c3dea95d0b"
+      "sha256": "b9731d81355ec8f8ba0f105db16b49042358937d5eca15a471d11cfa7f93b760"
     },
     {
       "file": "plugins/statusauto.smd",
-      "sha256": "3aaaeb91446fbb4d40974e79d87e9dcd0aeef45b2b5d6c70ba11788ebb753344"
+      "sha256": "72e73d2b4ad4c4fe4a69626d83fbcafb491422e889483113214e86ac51d45bc5"
     },
     {
       "file": "plugins/tagnotadmin.js",
-      "sha256": "48e397000d28e40fe19b08b4ba7ea9456f6f671f9f9bc64f35a31fbb8678c22e"
+      "sha256": "e063182a980f2a41a28dc3427f350b2dac2f564009b5335afc3d87a470e0cd89"
     },
     {
       "file": "plugins/tiktok.js",
-      "sha256": "eb403dcd57b8d0f1b2580a9b58c07ad2959fac5afc829e3e895a4b5b1fcd227b"
+      "sha256": "0f9f7ea53838112a2827499c3baddfff27090198756a6e42658df9e62c9f739f"
     },
     {
       "file": "plugins/tkick.js",
-      "sha256": "055d403ad2be91b80def0dc1859f41681628a1e8f04b8844a48977ae2ef28e27"
+      "sha256": "8b86f2826eac9ac09cfe556205e30d64da01e75ff1f465b483ab0fc37c0158c2"
     },
     {
       "file": "plugins/user.smd",
-      "sha256": "bb2393c72f1dfe1a951016f81d089d86c8c4e42a6d81510922948504aee2c2b8"
+      "sha256": "f6aaac5612ce515016ae5571889bdd95f1d510d44f821d9dfbca094cc3890db6"
     },
     {
       "file": "plugins/x.js",
-      "sha256": "add0265c20f46b8c0dc3c1d95c23f3cfc60abcf05731339e30c3940507ce6fde"
+      "sha256": "d0d2694a6226a9723a68422dd1d09d1ff7b298cb865850df9ed8d09bae353770"
     },
     {
       "file": "plugins/zz-safful-command-prune.js",
-      "sha256": "4dc454042b346b028aff7b4969fd1e9fef04fd04d21d5022abe2a920d0e75ab7"
+      "sha256": "7bcf9abd5779cb1928906d5e27a23977883947199461583a4563376a6990210a"
     },
     {
       "file": "plugins/zzzz-safful-song.js",
-      "sha256": "5af6a9dd615e4b65562a5c550592912bab82d2d47a686be6941b7f33f41fcfb9"
+      "sha256": "488bea31f19762b6307a100373029a9911ef27e7e15737f7a70c312d0d87fc63"
     },
     {
       "file": "Themes/ADAM.json",
@@ -387,9 +395,8 @@
     },
     {
       "file": "plugins/00-safful-integrity-check.js",
-      "sha256": "932ab9c11114c365e1df076043a5e61f32429e7b41239fb8491bd9bfcb1cdaeb"
+      "sha256": "309f550c98f2146a747741873aac3a6902ece5f5ab940a9284faacc668ee75ec"
     }
   ],
-  "notice": "This release intentionally contains obfuscated runtime code and no local credentials or .env file.",
-  "note": "smd.js excluded from integrity check (too large for panel OOM)"
+  "notice": "This release intentionally contains obfuscated runtime code and no local credentials or .env file."
 }
