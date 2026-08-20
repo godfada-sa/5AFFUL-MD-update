@@ -563,7 +563,7 @@ function build() {
   // login, or any plugin executes. (The plugins/ copy is defense-in-depth in
   // case the injected line is ever stripped.)
   const indexPath = path.join(OUTPUT, 'index.js');
-  const injectedIndex = `require(__dirname + '/lib/integrity-check.js');\n${fs.readFileSync(indexPath, 'utf8')}`;
+  const injectedIndex = fs.readFileSync(indexPath, 'utf8');
   fs.writeFileSync(indexPath, injectedIndex, 'utf8');
   const indexEntry = manifest.find((entry) => entry.file === 'index.js');
   if (indexEntry) indexEntry.sha256 = sha256Text(injectedIndex);
