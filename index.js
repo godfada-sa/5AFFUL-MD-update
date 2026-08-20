@@ -190,6 +190,28 @@ const start = async () => {
     if (global.__saffulAuthMethod === 'existing') clearRecoveryState()
     process.stdout.write(`[boot] auth method: ${global.__saffulAuthMethod || 'unknown'} (pairing number: ${global.__saffulPairingNumber || 'n/a'})\n`)
 
+    // ── Standalone pairing flow ───────────────────────────────────────
+    // When the operator sets AUTH_METHOD=pairing, we run the pairing
+    // bootstrap BEFORE loading the core. The bootstrap creates its own
+    // baileys socket, requests the pairing code, and saves the session.
+    // After success, we set auth method to 'existing' so the core
+    // reconnects with the saved session.
+    if (global.__saffulAuthMethod === 'pairing' && global.__saffulPairingNumber) {
+      const { startCleanPairing } = require(__dirname + '/lib/safful-pairing-bootstrap')
+      process.stdout.write('[boot] Starting standalone pairing flow…\n')
+      try {
+        await startCleanPairing(global.__saffulPairingNumber)
+        process.stdout.write('[boot] Pairing succeeded — session saved. Loading core…\n')
+        global.__saffulAuthMethod = 'existing'
+        clearRecoveryState()
+      } catch (pairError) {
+        process.stdout.write(`[boot] Pairing failed: ${pairError?.message || pairError}\n`)
+        process.stdout.write('[boot] Falling back to QR login…\n')
+        global.__saffulAuthMethod = 'qr'
+      }
+    }
+    // ──────────────────────────────────────────────────────────────────
+
     bootPhase = 'core-load'
     process.stdout.write('[boot] loading core module…\n')
     bot = require(__dirname + '/lib/smd')
