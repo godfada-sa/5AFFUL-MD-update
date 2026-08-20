@@ -418,44 +418,52 @@ Open \`http://<your-server-ip>:<PORT>/qr\`. Requires an inbound firewall/securit
 // against RELEASE-MANIFEST.json and exits before the bot connects if anything
 // was modified or removed since the build. Obfuscated like the rest of the
 // release; bypass with SAFFUL_SKIP_INTEGRITY_CHECK=1.
-const INTEGRITY_GUARD_FILENAME = 'plugins/00-safful-integrity-check.js';
+const INTEGRITY_GUARD_FILENAME = 'lib/integrity-check.js';
 const INTEGRITY_GUARD_SOURCE = `/* Safful-Md protected-release integrity guard.
- * Runs once at plugin load (startup). Hashes every runtime code file
- * (*.js / *.smd) listed in RELEASE-MANIFEST.json and refuses to start the
- * bot if any file was modified or removed since the release was built.
- * Bypass with the environment variable SAFFUL_SKIP_INTEGRITY_CHECK=1.
+ * Runs ONCE at boot (required from index.js, NOT in plugins/).
+ * Bypass with: SAFFUL_SKIP_INTEGRITY_CHECK=1
+ * Skips automatically on panels with limited RAM (< 512MB).
  */
-const fs = require('fs');
-const path = require('path');
-const crypto = require('crypto');
+(function() {
+  const fs = require('fs');
+  const path = require('path');
+  const crypto = require('crypto');
 
-function findReleaseRoot() {
-  let dir = __dirname;
-  for (let depth = 0; depth < 4; depth++) {
-    if (fs.existsSync(path.join(dir, 'RELEASE-MANIFEST.json'))) return dir;
-    dir = path.dirname(dir);
-  }
-  return path.resolve(__dirname, '..');
-}
+  if (global.__saffulIntegrityChecked) return;
+  global.__saffulIntegrityChecked = true;
 
-function verifyReleaseIntegrity() {
-  const skip = String(process.env.SAFFUL_SKIP_INTEGRITY_CHECK || '').toLowerCase();
-  if (skip === '1' || skip === 'true') {
-    console.log('[integrity] guard disabled via SAFFUL_SKIP_INTEGRITY_CHECK');
-    return;
+  try {
+    var totalMemMB = Math.round(require('os').totalmem() / 1024 / 1024);
+    if (totalMemMB < 512) return;
+  } catch(e) {}
+
+  var skip = String(process.env.SAFFUL_SKIP_INTEGRITY_CHECK || '').toLowerCase();
+  if (skip === '1' || skip === 'true') return;
+
+  function findReleaseRoot() {
+    var dir = __dirname;
+    for (var depth = 0; depth < 4; depth++) {
+      if (fs.existsSync(path.join(dir, 'RELEASE-MANIFEST.json'))) return dir;
+      dir = path.dirname(dir);
+    }
+    return path.resolve(__dirname, '..');
   }
-  const root = findReleaseRoot();
-  let manifest;
+
+  var root = findReleaseRoot();
+  var manifest;
   try {
     manifest = JSON.parse(fs.readFileSync(path.join(root, 'RELEASE-MANIFEST.json'), 'utf8'));
   } catch (error) {
     console.error('[integrity] FATAL: cannot read RELEASE-MANIFEST.json (' + (error && error.message) + ')');
     process.exit(1);
   }
-  const tracked = (manifest.protectedFiles || []).filter((entry) => /\.(js|smd)$/.test(entry.file));
-  const bad = [];
-  for (const entry of tracked) {
-    let actual;
+
+  var tracked = (manifest.protectedFiles || []).filter(function(entry) { return /\\.(js|smd)$/.test(entry.file); });
+  var bad = [];
+
+  for (var i = 0; i < tracked.length; i++) {
+    var entry = tracked[i];
+    var actual;
     try {
       actual = crypto.createHash('sha256').update(fs.readFileSync(path.join(root, entry.file))).digest('hex');
     } catch (error) {
@@ -464,23 +472,22 @@ function verifyReleaseIntegrity() {
     }
     if (actual !== entry.sha256) bad.push(entry.file);
   }
+
   if (bad.length === 0) {
     console.log('[integrity] protected runtime files verified (' + tracked.length + ' files, sha256)');
-    return;
+  } else {
+    console.error('');
+    console.error('  ============================================================');
+    console.error('  !  SAFFUL-MD RELEASE INTEGRITY CHECK FAILED               !');
+    console.error('  !  Runtime files were modified or removed:                !');
+    bad.slice(0, 25).forEach(function(file) { console.error('  !    - ' + file); });
+    console.error('  !  The bot will not start. Restore the original files or  !');
+    console.error('  !  set SAFFUL_SKIP_INTEGRITY_CHECK=1 to bypass this guard.!');
+    console.error('  ============================================================');
+    console.error('');
+    process.exit(1);
   }
-  console.error('');
-  console.error('  ============================================================');
-  console.error('  !  SAFFUL-MD RELEASE INTEGRITY CHECK FAILED               !');
-  console.error('  !  Runtime files were modified or removed:                !');
-  bad.slice(0, 25).forEach((file) => console.error('  !    - ' + file));
-  console.error('  !  The bot will not start. Restore the original files or  !');
-  console.error('  !  set SAFFUL_SKIP_INTEGRITY_CHECK=1 to bypass this guard.!');
-  console.error('  ============================================================');
-  console.error('');
-  process.exit(1);
-}
-
-verifyReleaseIntegrity();
+})();
 `;
 
 function writeIntegrityGuard(manifest) {
@@ -556,7 +563,7 @@ function build() {
   // login, or any plugin executes. (The plugins/ copy is defense-in-depth in
   // case the injected line is ever stripped.)
   const indexPath = path.join(OUTPUT, 'index.js');
-  const injectedIndex = `require(__dirname + '/plugins/00-safful-integrity-check.js');\n${fs.readFileSync(indexPath, 'utf8')}`;
+  const injectedIndex = `require(__dirname + '/lib/integrity-check.js');\n${fs.readFileSync(indexPath, 'utf8')}`;
   fs.writeFileSync(indexPath, injectedIndex, 'utf8');
   const indexEntry = manifest.find((entry) => entry.file === 'index.js');
   if (indexEntry) indexEntry.sha256 = sha256Text(injectedIndex);
